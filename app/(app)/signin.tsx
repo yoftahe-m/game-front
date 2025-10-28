@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button';
+import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
 import { Center } from '@/components/ui/center';
 import {
   FormControl,
@@ -20,13 +20,13 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { AlertCircleIcon } from '@/components/ui/icon'; // Assuming EyeIcon, EyeOffIcon, and AlertCircleIcon are available
 import { useForm, Controller } from 'react-hook-form'; // 👈 Import useForm and Controller
 import Feather from '@expo/vector-icons/Feather';
-import { useSignupMutation } from '@/store/service/user';
+import { useSigninMutation, useSignupMutation } from '@/store/service/user';
 import Toast from 'react-native-root-toast';
 import { router } from 'expo-router';
 import { signin } from '@/store/slice/user';
+import { useDispatch } from 'react-redux';
 // Define the shape of your form data
 type FormData = {
-  name: string;
   email: string;
   phone: string;
   password: string;
@@ -34,7 +34,8 @@ type FormData = {
 
 export default function SignupScreen() {
   const colorScheme = useColorScheme();
-  const [signup, { isLoading }] = useSignupMutation();
+  const dispatch = useDispatch();
+  const [login, { isLoading }] = useSigninMutation();
   const [showPassword, setShowPassword] = useState(false);
 
   const {
@@ -45,6 +46,7 @@ export default function SignupScreen() {
     defaultValues: {
       email: '',
       phone: '',
+      password: '',
     },
     // Set 'all' to validate on blur, change, and submit
     mode: 'onBlur',
@@ -55,12 +57,13 @@ export default function SignupScreen() {
     console.log('Sign in Data:', data);
 
     try {
-      const payload = {
+      const result = await login({
         data,
-      };
-      console.log('signin');
-      // router.replace('/(app)/(tabs)')
+      }).unwrap();
+      dispatch(signin(result));
+      router.replace('/(app)/(tabs)');
     } catch (error) {
+      console.log('error', error);
       Toast.show('Sign In failed.', {
         duration: Toast.durations.LONG,
       });
@@ -83,6 +86,7 @@ export default function SignupScreen() {
               source={{ uri: 'https://cdn-icons-png.flaticon.com/512/263/263142.png' }}
               style={{ width: 80, height: 80, tintColor: '#ff007f' }}
               resizeMode="contain"
+              alt='logo'
             />
           </Center>
           <Center>
@@ -169,7 +173,8 @@ export default function SignupScreen() {
           />
 
           <Button onPress={handleSubmit(onSubmit)} className="mt-6 bg-[#73d264] rounded-full h-12">
-            <Text className="text-white text-lg font-bold">Sign In</Text>
+            {isLoading && <ButtonSpinner color="gray" />}
+            <ButtonText size="xl">Sign In</ButtonText>
           </Button>
 
           <Center className=" flex-row">

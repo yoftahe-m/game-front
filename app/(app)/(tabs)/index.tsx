@@ -20,72 +20,54 @@ import { router } from 'expo-router';
 
 import games from '@/constants/games';
 
-import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogHeader,
-  AlertDialogFooter,
-  AlertDialogBody,
-  AlertDialogBackdrop,
-} from '@/components/ui/alert-dialog';
+import { Modal, ModalBackdrop, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter } from '@/components/ui/modal';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Heading } from '@/components/ui/heading';
 
 import { Button, ButtonText } from '@/components/ui/button';
+import { socket } from '@/socket';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
+import { CloseIcon, Icon } from '@/components/ui/icon';
 
 export default function TabOneScreen() {
-  const [showAlertDialog, setShowAlertDialog] = useState(false);
+  const [selectedGameId, setSelectedGameId] = useState('');
+  const [activeGames, setActiveGames] = useState<{ id: string; type: string; amount: string; maxPlayers: number; players: any[] }[]>([]);
+  const user = useSelector((state: RootState) => state.user.data);
 
-  const handleClose = () => setShowAlertDialog(false);
+  useEffect(() => {
+    socket.on('games:update', (updatedGames) => {
+      setActiveGames(updatedGames);
+    });
 
-  console.log('showAlertDialog', showAlertDialog);
+    return () => {
+      socket.off('games:update');
+    };
+  }, []);
 
-  const renderItem = ({ item }: any) => (
-    <>
-      <Pressable onPress={() => setShowAlertDialog(true)}>
+  const renderItem = ({ item }: { item: { id: string; type: string; amount: string; maxPlayers: number; players: any[] } }) => {
+    const game = games.find((g) => g.title === item.type);
+    return (
+      <Pressable onPress={() => setSelectedGameId(item.id)}>
         <HStack space="md">
-          <Image source={{ uri: item.image }} alt={item.title} width={50} height={50} />
+          <Image source={{ uri: game?.image }} alt={'game Image'} width={100} height={100} className="rounded-lg" />
 
-          <VStack space="sm">
-            <Text size="md">{item.title}</Text>
-
-            <Text size="sm" numberOfLines={2}>
-              {item.description}
+          <VStack space="xs">
+            <Text size="md" bold>
+              {game?.title}
+            </Text>
+            <Text size="sm" className="" numberOfLines={2}>
+              {game?.description}
             </Text>
           </VStack>
         </HStack>
       </Pressable>
+    );
+  };
 
-      <AlertDialog isOpen={showAlertDialog} onClose={handleClose} size="md">
-        <AlertDialogBackdrop />
-
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <Heading className="text-typography-950 font-semibold" size="md">
-              Are you sure you want to delete this post?
-            </Heading>
-          </AlertDialogHeader>
-
-          <AlertDialogBody className="mt-3 mb-4">
-            <Text size="sm">Deleting the post will remove it permanently and cannot be undone. Please confirm if you want to proceed.</Text>
-          </AlertDialogBody>
-
-          <AlertDialogFooter className="">
-            <Button variant="outline" action="secondary" onPress={handleClose} size="sm">
-              <ButtonText>Cancel</ButtonText>
-            </Button>
-
-            <Button size="sm" onPress={handleClose}>
-              <ButtonText>Delete</ButtonText>
-            </Button>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-    </>
-  );
-
+  let selectedGame = activeGames.find((g) => g.id === selectedGameId);
   return (
     <SafeAreaView style={{ flex: 1, paddingHorizontal: 8 }}>
       <VStack space="sm">
@@ -94,7 +76,7 @@ export default function TabOneScreen() {
             <Image source={{ uri: 'https://cdn-icons-png.flaticon.com/512/1754/1754120.png' }} alt={'profile'} width={50} height={50} />
 
             <VStack>
-              <Text size="md">name</Text>
+              <Text size="md">{user?.fullName}</Text>
 
               <Text size="sm" numberOfLines={2}>
                 token
@@ -111,12 +93,55 @@ export default function TabOneScreen() {
       </VStack>
 
       <FlatList
-        data={games}
+        data={activeGames}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
         keyExtractor={(item) => String(item.id)}
         contentContainerStyle={{ gap: 10, paddingBottom: 8 }}
       />
+      <Modal
+        isOpen={!!selectedGame}
+        onClose={() => {
+          setSelectedGameId('');
+        }}
+        size="md"
+      >
+        <ModalBackdrop />
+        <ModalContent>
+          <ModalHeader>
+            <Heading size="lg">{selectedGame?.type}</Heading>
+            <ModalCloseButton>
+              <Icon as={CloseIcon} />
+            </ModalCloseButton>
+          </ModalHeader>
+          <ModalBody>
+            <Text>
+              By accepting the modal, you will bet {selectedGame?.amount} game coins for a chance to win
+              {Number(selectedGame?.amount) * Number(selectedGame?.maxPlayers)} by playing against {selectedGame?.maxPlayers} players.
+            </Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              variant="outline"
+              action="secondary"
+              className="mr-3"
+              onPress={() => {
+                setSelectedGameId('');
+              }}
+            >
+              <ButtonText>Cancel</ButtonText>
+            </Button>
+            <Button
+              onPress={() => {
+                router.push({ pathname: '/loading', params: { gameId: selectedGameId } });
+                setSelectedGameId('');
+              }}
+            >
+              <ButtonText>Bet</ButtonText>
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </SafeAreaView>
   );
 }

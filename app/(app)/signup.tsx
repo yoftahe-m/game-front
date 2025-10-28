@@ -87,6 +87,7 @@ export default function SignupScreen() {
               source={{ uri: 'https://cdn-icons-png.flaticon.com/512/263/263142.png' }}
               style={{ width: 80, height: 80, tintColor: '#ff007f' }}
               resizeMode="contain"
+              alt='logo'
             />
             <Text className="text-xs text-gray-500 mt-[-20]">Lorem</Text>
           </Center>

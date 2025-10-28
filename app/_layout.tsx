@@ -51,8 +51,10 @@ function RootLayoutNav() {
       <PersistGate loading={<ActivityIndicator size="large" />} persistor={persistor}>
         <GluestackUIProvider mode="system">
           <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-            <Slot />
-            <StatusBar style="auto" />
+            <AuthProvider>
+              <Slot />
+              <StatusBar style="auto" />
+            </AuthProvider>
           </ThemeProvider>
         </GluestackUIProvider>
       </PersistGate>

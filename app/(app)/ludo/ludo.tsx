@@ -12,10 +12,10 @@ import { HStack } from '@/components/ui/hstack';
 import React, { useContext, useEffect, useState } from 'react';
 import { View, Pressable, Animated, Easing, Dimensions } from 'react-native';
 import { RelativePathString, useLocalSearchParams, useRouter } from 'expo-router';
-import { DataContext } from './context/DataContext';
-import { WsContext } from './context/WsContext';
+import { DataContext } from './_context/DataContext';
+import { WsContext } from './_context/WsContext';
 import { Dice1, Dice2, Dice3, Dice4, Dice5, Dice6 } from 'lucide-react-native';
-import { LUDO_BOARD } from './constants/board';
+import { LUDO_BOARD } from './_constants/board';
 import { socket } from '@/socket';
 
 export default function LudoScreen() {

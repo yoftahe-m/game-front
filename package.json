@@ -21,6 +21,7 @@
     "@gluestack-ui/utils": "^3.0.11",
     "@gorhom/bottom-sheet": "^5.0.0-alpha.11",
     "@legendapp/motion": "^2.4.0",
+    "@quidone/react-native-wheel-picker": "^1.6.1",
     "@react-aria/utils": "^3.29.0",
     "@react-navigation/native": "^7.1.6",
     "@reduxjs/toolkit": "^2.9.2",
