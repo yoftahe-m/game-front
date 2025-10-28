@@ -25,7 +25,6 @@ export default function TicTacToeScreen() {
   }, []);
 
   function handlePress(index: number) {
-    console.log('Cell', index);
     socket.emit('ticTacToe:selectCell', { userId: user?.id, gameId: playingGame.id, cell: index });
   }
 
@@ -43,7 +42,6 @@ export default function TicTacToeScreen() {
         {/* Game Board */}
         <Grid className="gap-4" _extra={{ className: 'grid-cols-3' }}>
           {playingGame.options.board.map((value: string, index: number) => {
-            console.log(value);
             return (
               <GridItem
                 key={index}
