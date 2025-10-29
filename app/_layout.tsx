@@ -12,7 +12,7 @@ import { Fab, FabIcon } from '@/components/ui/fab';
 import { MoonIcon, SunIcon } from '@/components/ui/icon';
 import { Provider, useSelector } from 'react-redux';
 import { persistor, RootState, store } from '@/store';
-import { ActivityIndicator } from 'react-native';
+import { ActivityIndicator, View } from 'react-native';
 import { PersistGate } from 'redux-persist/integration/react';
 
 export {
@@ -49,13 +49,14 @@ function RootLayoutNav() {
   return (
     <Provider store={store}>
       <PersistGate loading={<ActivityIndicator size="large" />} persistor={persistor}>
-        <GluestackUIProvider mode="system">
-          <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-            <AuthProvider>
-              <Slot />
-              <StatusBar style="auto" />
-            </AuthProvider>
-          </ThemeProvider>
+        <GluestackUIProvider>
+          {/* <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}> */}
+
+          <AuthProvider>
+            <Slot />
+            <StatusBar style='light' />
+          </AuthProvider>
+          {/* </ThemeProvider> */}
         </GluestackUIProvider>
       </PersistGate>
     </Provider>

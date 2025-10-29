@@ -1,6 +1,6 @@
 import { Box } from '@/components/ui/box';
 
-import { FlatList } from 'react-native';
+import { FlatList, View } from 'react-native';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -31,8 +31,12 @@ import { socket } from '@/socket';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { CloseIcon, Icon } from '@/components/ui/icon';
-
+import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
+import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Input, InputField } from '@/components/ui/input';
 export default function TabOneScreen() {
+  const insets = useSafeAreaInsets();
   const [selectedGameId, setSelectedGameId] = useState('');
   const [activeGames, setActiveGames] = useState<{ id: string; type: string; amount: string; maxPlayers: number; players: any[] }[]>([]);
   const user = useSelector((state: RootState) => state.user.data);
@@ -50,55 +54,114 @@ export default function TabOneScreen() {
   const renderItem = ({ item }: { item: { id: string; type: string; amount: string; maxPlayers: number; players: any[] } }) => {
     const game = games.find((g) => g.title === item.type);
     return (
-      <Pressable onPress={() => setSelectedGameId(item.id)}>
+      <HStack className="items-center justify-between border-b border-amber-600 pb-2">
         <HStack space="md">
           <Image source={{ uri: game?.image }} alt={'game Image'} width={100} height={100} className="rounded-lg" />
 
-          <VStack space="xs">
-            <Text size="md" bold>
+          <VStack>
+            <Text size="xl" bold className="text-neutral-700">
               {game?.title}
             </Text>
-            <Text size="sm" className="" numberOfLines={2}>
-              {game?.description}
+            <Text size="lg" bold className="text-neutral-500">
+              Stake: {item.amount}
+            </Text>
+            <Text size="lg" bold className="text-neutral-500">
+              players: {item.players.length}/{item.maxPlayers}
             </Text>
           </VStack>
         </HStack>
-      </Pressable>
+        <Button className="bg-green-600 focus:bg-green-500 hover:bg-red-500" onPress={() => setSelectedGameId(item.id)}>
+          <ButtonText>Join</ButtonText>
+        </Button>
+      </HStack>
     );
   };
 
   let selectedGame = activeGames.find((g) => g.id === selectedGameId);
   return (
-    <SafeAreaView style={{ flex: 1, paddingHorizontal: 8 }}>
-      <VStack space="sm">
-        <Box className="flex flex-row justify-between items-center">
-          <HStack space="md">
-            <Image source={{ uri: 'https://cdn-icons-png.flaticon.com/512/1754/1754120.png' }} alt={'profile'} width={50} height={50} />
+    <View style={{ flex: 1 }}>
+      <VStack className=" flex-1">
+        <HStack space="md" className="items-center justify-between px-2 bg-[#0c2665] pb-3" style={{ paddingTop: insets.top }}>
+          <HStack space="sm" className="items-center">
+            <Avatar size="md">
+              <AvatarFallbackText>{user?.fullName}</AvatarFallbackText>
+              <AvatarImage
+                source={{
+                  uri: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80',
+                }}
+              />
+            </Avatar>
 
-            <VStack>
-              <Text size="md">{user?.fullName}</Text>
-
-              <Text size="sm" numberOfLines={2}>
-                token
+            <Text bold>{user?.fullName.slice(0, 10)}</Text>
+          </HStack>
+          <HStack space="2xl">
+            <HStack className="items-center">
+              <Box className="size-6 bg-amber-300 flex items-center justify-center rounded-full">
+                <FontAwesome5 name="coins" size={12} color="white" />
+              </Box>
+              <Text className="h-6 px-2 " bold>
+                3000
               </Text>
-            </VStack>
+              <Box className="size-5 bg-green-600 flex items-center justify-center ">
+                <FontAwesome5 name="plus" size={12} color="white" />
+              </Box>
+            </HStack>
+
+            <HStack className="items-center">
+              <Box className="size-6 bg-amber-300 flex items-center justify-center rounded-full">
+                <FontAwesome5 name="coins" size={12} color="white" />
+              </Box>
+              <Text className="h-6 px-2" bold>
+                3000
+              </Text>
+              <Box className="size-5 bg-green-600 flex items-center justify-center">
+                <FontAwesome5 name="plus" size={12} color="white" />
+              </Box>
+            </HStack>
+          </HStack>
+        </HStack>
+
+        <VStack className="m-2 mt-4 mb-0 flex-1 border-[3px] border-amber-600 rounded-3xl bg-amber-400">
+          <HStack className="justify-between items-center p-4 px-8">
+            <Text size="xl" bold>
+              Active Games
+            </Text>
+
+            <Input
+              variant="outline"
+              size="md"
+              isDisabled={false}
+              isInvalid={false}
+              isReadOnly={false}
+              className="h-8 w-40 rounded-full border-amber-200 bg-amber-200"
+            >
+              <InputField placeholder="Search" />
+            </Input>
           </HStack>
 
-          <Pressable onPress={() => router.push('/settings')}>
-            <Feather name="menu" size={24} color="black" />
-          </Pressable>
+          <FlatList
+            data={activeGames}
+            renderItem={renderItem}
+            showsVerticalScrollIndicator={false}
+            keyExtractor={(item) => String(item.id)}
+            contentContainerStyle={{
+              gap: 10,
+              padding: 8,
+              paddingBottom: 8,
+              margin: 8,
+              marginTop: 0,
+              borderWidth: 3,
+              borderColor: '#f59e0b',
+              flex: 1,
+              borderRadius: 20,
+              backgroundColor: '#fde68a',
+            }}
+          />
+        </VStack>
+        <Box className="p-2 px-6">
+          <Text bold>helljkshfkjs hdlhsdlv sdkvhskdvhsd sdjvhsjhdv shdjvghsjdvo</Text>
         </Box>
-
-        <Text>Active Games</Text>
       </VStack>
-
-      <FlatList
-        data={activeGames}
-        renderItem={renderItem}
-        showsVerticalScrollIndicator={false}
-        keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={{ gap: 10, paddingBottom: 8 }}
-      />
       <Modal
         isOpen={!!selectedGame}
         onClose={() => {
@@ -107,17 +170,17 @@ export default function TabOneScreen() {
         size="md"
       >
         <ModalBackdrop />
-        <ModalContent>
+        <ModalContent className="bg-[#071843] border-0">
           <ModalHeader>
-            <Heading size="lg">{selectedGame?.type}</Heading>
-            <ModalCloseButton>
-              <Icon as={CloseIcon} />
-            </ModalCloseButton>
+            <Text size="xl" bold>
+              {selectedGame?.type}
+            </Text>
           </ModalHeader>
           <ModalBody>
             <Text>
-              By accepting the modal, you will bet {selectedGame?.amount} game coins for a chance to win
-              {Number(selectedGame?.amount) * Number(selectedGame?.maxPlayers)} by playing against {selectedGame?.maxPlayers} players.
+              Are you sure you want to join?
+              {/* By accepting the modal, you will bet {selectedGame?.amount} game coins for a chance to win
+              {Number(selectedGame?.amount) * Number(selectedGame?.maxPlayers)} by playing against {selectedGame?.maxPlayers} players. */}
             </Text>
           </ModalBody>
           <ModalFooter>
@@ -136,12 +199,13 @@ export default function TabOneScreen() {
                 router.push({ pathname: '/loading', params: { gameId: selectedGameId } });
                 setSelectedGameId('');
               }}
+              className="bg-green-600"
             >
-              <ButtonText>Bet</ButtonText>
+              <ButtonText>Join</ButtonText>
             </Button>
           </ModalFooter>
         </ModalContent>
       </Modal>
-    </SafeAreaView>
+    </View>
   );
 }

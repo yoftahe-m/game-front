@@ -3,22 +3,25 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack'; // Assuming you have an HStack for horizontal alignment
 import React from 'react';
-import { ScrollView } from 'react-native';
+import { FlatList, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { SearchIcon } from '@/components/ui/icon'; // Assuming a SearchIcon is available
+import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
+import { Box } from '@/components/ui/box';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 // --- Mock Data ---
 const mockLeaderboardData = [
-  { rank: 1, name: 'Alice 👑', score: 9875, avatar: 'https://i.pravatar.cc/150?img=1' },
-  { rank: 2, name: 'Bob', score: 8500, avatar: 'https://i.pravatar.cc/150?img=2' },
-  { rank: 3, name: 'Charlie', score: 7920, avatar: 'https://i.pravatar.cc/150?img=3' },
-  { rank: 4, name: 'Diana', score: 6450, avatar: 'https://i.pravatar.cc/150?img=4' },
-  { rank: 5, name: 'Ethan', score: 5890, avatar: 'https://i.pravatar.cc/150?img=5' },
-  { rank: 6, name: 'Fiona', score: 4900, avatar: 'https://i.pravatar.cc/150?img=6' },
-  { rank: 7, name: 'George', score: 3810, avatar: 'https://i.pravatar.cc/150?img=7' },
-  { rank: 8, name: 'Hannah', score: 3550, avatar: 'https://i.pravatar.cc/150?img=8' },
-  { rank: 9, name: 'Isaac', score: 2990, avatar: 'https://i.pravatar.cc/150?img=9' },
-  { rank: 10, name: 'Jasmine', score: 2100, avatar: 'https://i.pravatar.cc/150?img=10' },
+  { id: 1, name: 'Alice 👑', score: 9875, avatar: 'https://i.pravatar.cc/150?img=1' },
+  { id: 2, name: 'Bob', score: 8500, avatar: 'https://i.pravatar.cc/150?img=2' },
+  { id: 3, name: 'Charlie', score: 7920, avatar: 'https://i.pravatar.cc/150?img=3' },
+  { id: 4, name: 'Diana', score: 6450, avatar: 'https://i.pravatar.cc/150?img=4' },
+  { id: 5, name: 'Ethan', score: 5890, avatar: 'https://i.pravatar.cc/150?img=5' },
+  { id: 6, name: 'Fiona', score: 4900, avatar: 'https://i.pravatar.cc/150?img=6' },
+  { id: 7, name: 'George', score: 3810, avatar: 'https://i.pravatar.cc/150?img=7' },
+  { id: 8, name: 'Hannah', score: 3550, avatar: 'https://i.pravatar.cc/150?img=8' },
+  { id: 9, name: 'Isaac', score: 2990, avatar: 'https://i.pravatar.cc/150?img=9' },
+  { id: 10, name: 'Jasmine', score: 2100, avatar: 'https://i.pravatar.cc/150?img=10' },
 ];
 
 // --- Leaderboard Item Component ---
@@ -42,63 +45,90 @@ const LeaderboardItem: React.FC<LeaderboardItemProps> = ({ rank, name, score, is
   };
 
   return (
-    <HStack
-      className={`w-full p-4 items-center justify-between ${rankStyles.bg} ${rankStyles.border}`}
-      space="xl"
-    >
+    <HStack className={`w-full p-4 items-center justify-between ${rankStyles.bg} ${rankStyles.border}`} space="xl">
       {/* Rank and Name */}
       <HStack className="items-center" space="xl">
-        <Text className={`w-8 text-center ${rankStyles.textSize} ${rankStyles.rankColor}`}>
-          {rank}
-        </Text>
+        <Text className={`w-8 text-center ${rankStyles.textSize} ${rankStyles.rankColor}`}>{rank}</Text>
         <Text className={`${rankStyles.textSize} text-gray-800`}>{name}</Text>
       </HStack>
 
       {/* Score */}
       <HStack className="items-center" space="sm">
         {rank === 1 && <SearchIcon className="text-[#ffb300]" />}
-        <Text className={`${rankStyles.textSize} text-[#4BC0D9]`}>
-          {score.toLocaleString()}
-        </Text>
+        <Text className={`${rankStyles.textSize} text-[#4BC0D9]`}>{score.toLocaleString()}</Text>
       </HStack>
     </HStack>
   );
 };
 
-// --- Main Leaderboard Screen ---
 export default function LeaderboardScreen() {
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <VStack className="flex-1 bg-gray-50">
-        {/* Header */}
-        <Center className="py-6 px-5 bg-[#4BC0D9] shadow-md">
-          <Text className="text-2xl font-bold text-white">Global Leaderboard 🏆</Text>
-          <Text className="text-sm text-white/80 mt-1">See who is on top this week!</Text>
-        </Center>
-
-        {/* List Header */}
-        <HStack className="w-full p-4 items-center justify-between bg-gray-200 border-b border-gray-300">
-          <HStack className="items-center" space="xl">
-            <Text className="w-8 text-center text-sm font-semibold text-gray-600">RANK</Text>
-            <Text className="text-sm font-semibold text-gray-600">USER</Text>
+      <VStack space="lg" className="flex-1">
+        <Center className="">
+          <HStack className="items-end">
+            <VStack>
+              <Box className="w-20 h-28 bg-[#071843] flex items-center justify-center">
+                <Text>2</Text>
+              </Box>
+              <Text className="text-center">{mockLeaderboardData[1].name}</Text>
+            </VStack>
+            <VStack className='items-center'>
+              <MaterialCommunityIcons name="crown-outline" size={24} color={'white'} />
+              <Box className="w-20 h-36 bg-[#071843] flex items-center justify-center">
+                <Text>1</Text>
+              </Box>
+              <Text className="text-center">{mockLeaderboardData[0].name}</Text>
+            </VStack>
+            <VStack>
+              <Box className="w-20 h-20 bg-[#071843] flex items-center justify-center">
+                <Text>3</Text>
+              </Box>
+              <Text className="text-center">{mockLeaderboardData[2].name}</Text>
+            </VStack>
           </HStack>
-          <Text className="text-sm font-semibold text-gray-600">SCORE</Text>
-        </HStack>
-
-        {/* Leaderboard List */}
-        <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-          <VStack className="w-full">
-            {mockLeaderboardData.map((item) => (
-              <LeaderboardItem
-                key={item.rank}
-                rank={item.rank}
-                name={item.name}
-                score={item.score}
-                isTopThree={item.rank <= 3}
-              />
-            ))}
-          </VStack>
-        </ScrollView>
+        </Center>
+        <FlatList
+          data={mockLeaderboardData.slice(3, 10)}
+          renderItem={({ index, item }) => {
+            return (
+              <HStack space="md" className="items-center justify-between px-2">
+                <HStack space="md" className="items-center">
+                  <Text size="lg" bold>
+                    {index + 4}
+                  </Text>
+                  <Avatar size="md">
+                    <AvatarFallbackText>{item.name}</AvatarFallbackText>
+                    <AvatarImage
+                      source={{
+                        uri: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80',
+                      }}
+                    />
+                  </Avatar>
+                  <Text size="lg" bold>
+                    {item.name}
+                  </Text>
+                </HStack>
+                <Text size="lg" bold>
+                  {item.score}
+                </Text>
+              </HStack>
+            );
+          }}
+          showsVerticalScrollIndicator={false}
+          keyExtractor={(item) => String(item.id)}
+          contentContainerStyle={{
+            gap: 10,
+            paddingBottom: 8,
+            margin: 8,
+            marginTop: 0,
+            borderWidth: 1,
+            borderColor: 'white',
+            flex: 1,
+            borderRadius: 20,
+            overflow:"hidden"
+          }}
+        />
       </VStack>
     </SafeAreaView>
   );

@@ -50,6 +50,7 @@ export default function LoadingScreen() {
 
   useEffect(() => {
     socket.on('gameStarted', (game) => {
+      console.log(game)
       switch (game.type) {
         case 'Tic Tac Toe':
           router.push({ pathname: '/tic-tac-toe', params: { game: JSON.stringify(game) } });

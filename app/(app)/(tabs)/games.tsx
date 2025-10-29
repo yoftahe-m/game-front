@@ -23,7 +23,7 @@ export default function GamesScreen() {
         </Text>
         <Grid className="gap-4" _extra={{ className: `grid-cols-${numColumns}` }}>
           {games.map((game) => (
-            <GridItem key={game.id} className="bg-background-50  rounded-lg shadow-sm overflow-hidden" _extra={{ className: 'col-span-1' }}>
+            <GridItem key={game.id} className="bg-[#0c2665]  rounded-lg shadow-sm overflow-hidden" _extra={{ className: 'col-span-1' }}>
               <Pressable onPress={() => router.push({ pathname: '/game', params: { gameId: game.id } })}>
                 <VStack space="sm">
                   <Box className="aspect-square">
@@ -31,12 +31,10 @@ export default function GamesScreen() {
                   </Box>
 
                   <VStack space="xs" className="p-4 pt-0">
-                    <Text size="md" bold>
+                    <Text size="lg" bold>
                       {game.title}
                     </Text>
-                    <Text size="sm" numberOfLines={2}>
-                      {game.description}
-                    </Text>
+                   
                   </VStack>
                 </VStack>
               </Pressable>
