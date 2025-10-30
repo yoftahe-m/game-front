@@ -4,32 +4,49 @@ import { ScrollView, Pressable, View } from 'react-native';
 import { Grid, GridItem } from '@/components/ui/grid';
 import { Text } from '@/components/ui/text';
 import { router, useLocalSearchParams } from 'expo-router';
-import { socket } from '@/socket';
+import { getSocket } from '@/socket';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 
 export default function TicTacToeScreen() {
+  const socket = getSocket();
   const { game } = useLocalSearchParams<{ game: string }>();
 
   const user = useSelector((state: RootState) => state.user.data);
   const [playingGame, setPlayingGame] = useState(JSON.parse(game));
 
   useEffect(() => {
+    if (!socket) return;
     socket.on('gameUpdate', (gameUpdate) => {
       setPlayingGame(gameUpdate);
     });
 
     return () => {
-      socket.off('gameUpdate');
+      socket?.off('gameUpdate');
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!socket) return;
+    socket.on('gameOver', (gameOver) => {
+      router.replace({
+        pathname: gameOver.winner === 'draw' ? '/(app)/draw' : gameOver.winner === user?.id ? '/(app)/won' : '/(app)/lost',
+        params: { gameOver },
+      });
+    });
+
+    return () => {
+      socket?.off('gameOver');
     };
   }, []);
 
   function handlePress(index: number) {
-    socket.emit('ticTacToe:selectCell', { userId: user?.id, gameId: playingGame.id, cell: index });
+    if (!socket) return;
+    socket.emit('ticTacToe:selectCell', { gameId: playingGame.id, cell: index });
   }
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: '#fafafa' }}>
+    <SafeAreaView style={{ flex: 1 }}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 16 }}>
         {/* Header */}
         <View style={{ alignItems: 'center', marginBottom: 20 }}>

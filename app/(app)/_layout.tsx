@@ -1,9 +1,16 @@
 import { Stack } from 'expo-router';
-import { socket } from '@/socket';
-
-socket.on('connect', () => {});
+import { connectSocket } from '@/socket';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
+import { useEffect } from 'react';
 
 export default function AppLayout() {
+  const accessToken = useSelector((state: RootState) => state.user.accessToken);
+
+  useEffect(() => {
+    if (accessToken) connectSocket(accessToken);
+  }, [accessToken]);
+
   return (
     <Stack
       screenOptions={{
@@ -13,6 +20,7 @@ export default function AppLayout() {
       }}
     >
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+      <Stack.Screen name="tic-tac-toe" options={{ headerShown: false }} />
     </Stack>
   );
 }

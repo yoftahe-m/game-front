@@ -8,6 +8,7 @@ import userReducer from './slice/user';
 import orderReducer from './slice/order';
 import { userApi } from './service/user';
 import { businessApi } from './service/business';
+import { transactionApi } from './service/transaction';
 import { restaurantApi } from './service/restaurant';
 
 const persistConfig = {
@@ -45,6 +46,7 @@ const rootReducer = combineReducers({
   [userApi.reducerPath]: userApi.reducer,
   [businessApi.reducerPath]: businessApi.reducer,
   [restaurantApi.reducerPath]: restaurantApi.reducer,
+  [transactionApi.reducerPath]: transactionApi.reducer,
 });
 
 const persistedReducer = persistReducer(persistConfig, rootReducer);
@@ -56,7 +58,7 @@ export const store = configureStore({
       serializableCheck: {
         ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
       },
-    }).concat(userApi.middleware, businessApi.middleware, adApi.middleware, restaurantApi.middleware),
+    }).concat(userApi.middleware, businessApi.middleware, adApi.middleware, restaurantApi.middleware,transactionApi.middleware),
 });
 
 export const persistor = persistStore(store);

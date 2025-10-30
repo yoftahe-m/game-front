@@ -1,3 +1,20 @@
-import { io } from "socket.io-client";
+// socket.ts
+import { io, Socket } from 'socket.io-client';
 
-export const socket = io("http://192.168.164.60:8100");
+let socket: Socket | null = null;
+
+export const connectSocket = (token: string): Socket => {
+  if (socket) return socket; // reuse existing
+
+  socket = io('http://192.168.52.60:8100', {
+    transports: ['websocket'],
+    auth: { token },
+  });
+
+  socket.on('connect', () => console.log('✅ Connected:', socket?.id));
+  socket.on('connect_error', (err) => console.error('❌ Socket error:', err.message));
+
+  return socket;
+};
+
+export const getSocket = () => socket; // helper to access current instance

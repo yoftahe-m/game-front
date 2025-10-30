@@ -4,23 +4,22 @@ import { Box } from '@/components/ui/box';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
 import { router, useLocalSearchParams } from 'expo-router';
-import { socket } from '@/socket';
+import { getSocket } from '@/socket';
 import { FlatList, ScrollView } from 'react-native';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
 import { Avatar, AvatarFallbackText, AvatarImage, AvatarBadge } from '@/components/ui/avatar';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
-// socket.on('gameFound', (gameId) => {
-//   console.log('Game found:', gameId);
-// });
 
 export default function LoadingScreen() {
+  const socket = getSocket();
   const { type, maxPlayers, amount, gameId } = useLocalSearchParams();
   const [game, setGame] = useState<{ id: string; type: string; amount: string; maxPlayers: number; players: any[] }>();
   const user = useSelector((state: RootState) => state.user.data);
-  console.log('gameId', gameId);
+   
   useEffect(() => {
+    if (!socket) return;
     if (gameId) {
       socket.emit('joinGame', {
         userId: user!.id,
@@ -39,24 +38,26 @@ export default function LoadingScreen() {
   }, []);
 
   useEffect(() => {
+    if (!socket) return;
     socket.on('waiting', (newGame) => {
       setGame(newGame);
     });
 
     return () => {
-      socket.off('waiting');
+      socket?.off('waiting');
     };
   }, []);
 
   useEffect(() => {
+    if (!socket) return;
     socket.on('gameStarted', (game) => {
-      console.log(game)
+      console.log(game);
       switch (game.type) {
         case 'Tic Tac Toe':
-          router.push({ pathname: '/tic-tac-toe', params: { game: JSON.stringify(game) } });
+          router.replace({ pathname: '/tic-tac-toe', params: { game: JSON.stringify(game) } });
           break;
         case 'Ludo':
-          router.push({ pathname: '/(app)/ludo/ludo', params: { game: JSON.stringify(game) } });
+          router.replace({ pathname: '/(app)/ludo/ludo', params: { game: JSON.stringify(game) } });
           break;
         default:
           break;
@@ -64,7 +65,7 @@ export default function LoadingScreen() {
     });
 
     return () => {
-      socket.off('gameStarted');
+      socket?.off('gameStarted');
     };
   }, []);
 

@@ -1,134 +1,109 @@
-import { Center } from '@/components/ui/center';
+import { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList } from 'react-native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack'; // Assuming you have an HStack for horizontal alignment
-import React from 'react';
-import { FlatList, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { SearchIcon } from '@/components/ui/icon'; // Assuming a SearchIcon is available
+import { Center } from '@/components/ui/center';
+import { HStack } from '@/components/ui/hstack';
+import { LeaderI, useGetLeaderboardQuery } from '@/store/service/transaction';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
-import { Box } from '@/components/ui/box';
-import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-// --- Mock Data ---
-const mockLeaderboardData = [
-  { id: 1, name: 'Alice 👑', score: 9875, avatar: 'https://i.pravatar.cc/150?img=1' },
-  { id: 2, name: 'Bob', score: 8500, avatar: 'https://i.pravatar.cc/150?img=2' },
-  { id: 3, name: 'Charlie', score: 7920, avatar: 'https://i.pravatar.cc/150?img=3' },
-  { id: 4, name: 'Diana', score: 6450, avatar: 'https://i.pravatar.cc/150?img=4' },
-  { id: 5, name: 'Ethan', score: 5890, avatar: 'https://i.pravatar.cc/150?img=5' },
-  { id: 6, name: 'Fiona', score: 4900, avatar: 'https://i.pravatar.cc/150?img=6' },
-  { id: 7, name: 'George', score: 3810, avatar: 'https://i.pravatar.cc/150?img=7' },
-  { id: 8, name: 'Hannah', score: 3550, avatar: 'https://i.pravatar.cc/150?img=8' },
-  { id: 9, name: 'Isaac', score: 2990, avatar: 'https://i.pravatar.cc/150?img=9' },
-  { id: 10, name: 'Jasmine', score: 2100, avatar: 'https://i.pravatar.cc/150?img=10' },
-];
+export default function LeaderboardScreen() {
+  const [leaders, setLeaders] = useState<LeaderI[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
 
-// --- Leaderboard Item Component ---
-interface LeaderboardItemProps {
-  rank: number;
-  name: string;
-  score: number;
-  isTopThree?: boolean;
-}
+  const { data, isSuccess, isFetching, error } = useGetLeaderboardQuery({
+    page: currentPage,
+    size: 5,
+  });
 
-const LeaderboardItem: React.FC<LeaderboardItemProps> = ({ rank, name, score, isTopThree = false }) => {
-  const rankStyles = {
-    // Top 3 have a more prominent background
-    bg: isTopThree ? 'bg-[#ffeb3b]/50' : 'bg-white',
-    // Top 3 rank text color
-    rankColor: isTopThree ? 'text-[#ffb300]' : 'text-gray-500',
-    // Top 3 score/name text size
-    textSize: isTopThree ? 'text-lg font-bold' : 'text-base font-medium',
-    // Border for top 3
-    border: isTopThree ? 'border-l-4 border-[#ffb300]' : 'border-b border-gray-100',
+  useEffect(() => {
+    if (isSuccess && data?.leaders) {
+      setLeaders((prev) => {
+        const existingIds = new Set(prev.map((t) => t.id));
+        const newOnes = data.leaders.filter((t) => !existingIds.has(t.id));
+        return [...prev, ...newOnes];
+      });
+    }
+  }, [data, isSuccess]);
+
+  const loadMore = () => {
+    if (!isFetching && data && currentPage < data.totalPages) {
+      setCurrentPage((prev) => prev + 1);
+    }
   };
 
   return (
-    <HStack className={`w-full p-4 items-center justify-between ${rankStyles.bg} ${rankStyles.border}`} space="xl">
-      {/* Rank and Name */}
-      <HStack className="items-center" space="xl">
-        <Text className={`w-8 text-center ${rankStyles.textSize} ${rankStyles.rankColor}`}>{rank}</Text>
-        <Text className={`${rankStyles.textSize} text-gray-800`}>{name}</Text>
-      </HStack>
-
-      {/* Score */}
-      <HStack className="items-center" space="sm">
-        {rank === 1 && <SearchIcon className="text-[#ffb300]" />}
-        <Text className={`${rankStyles.textSize} text-[#4BC0D9]`}>{score.toLocaleString()}</Text>
-      </HStack>
-    </HStack>
-  );
-};
-
-export default function LeaderboardScreen() {
-  return (
     <SafeAreaView style={{ flex: 1 }}>
-      <VStack space="lg" className="flex-1">
+      <VStack space="lg" className="flex-1 m-2">
         <Center className="">
           <HStack className="items-end">
             <VStack>
-              <Box className="w-20 h-28 bg-[#071843] flex items-center justify-center">
+              <Box className="w-20 h-28 bg-slate-400 flex items-center justify-center rounded-tl-lg rounded-bl-lg">
                 <Text>2</Text>
               </Box>
-              <Text className="text-center">{mockLeaderboardData[1].name}</Text>
+              <Text className="text-center">{leaders.length > 2 ? leaders[1].full_name.slice(0, 5) : ''}</Text>
             </VStack>
-            <VStack className='items-center'>
-              <MaterialCommunityIcons name="crown-outline" size={24} color={'white'} />
-              <Box className="w-20 h-36 bg-[#071843] flex items-center justify-center">
+            <VStack className="items-center">
+              <MaterialCommunityIcons name="crown-outline" size={24} color={'#fbbf24'} />
+              <Box className="w-20 h-36 bg-amber-400 flex items-center justify-center rounded-t-lg">
                 <Text>1</Text>
               </Box>
-              <Text className="text-center">{mockLeaderboardData[0].name}</Text>
+              <Text className="text-center">{leaders.length > 2 ? leaders[0].full_name.slice(0, 5) : ''}</Text>
             </VStack>
             <VStack>
-              <Box className="w-20 h-20 bg-[#071843] flex items-center justify-center">
+              <Box className="w-20 h-20 bg-orange-800 flex items-center justify-center rounded-tr-lg rounded-br-lg">
                 <Text>3</Text>
               </Box>
-              <Text className="text-center">{mockLeaderboardData[2].name}</Text>
+              <Text className="text-center">{leaders.length > 2 ? leaders[2].full_name.slice(0, 5) : ''}</Text>
             </VStack>
           </HStack>
         </Center>
-        <FlatList
-          data={mockLeaderboardData.slice(3, 10)}
-          renderItem={({ index, item }) => {
-            return (
-              <HStack space="md" className="items-center justify-between px-2">
-                <HStack space="md" className="items-center">
-                  <Text size="lg" bold>
-                    {index + 4}
-                  </Text>
-                  <Avatar size="md">
-                    <AvatarFallbackText>{item.name}</AvatarFallbackText>
-                    <AvatarImage
-                      source={{
-                        uri: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80',
-                      }}
-                    />
-                  </Avatar>
-                  <Text size="lg" bold>
-                    {item.name}
-                  </Text>
-                </HStack>
-                <Text size="lg" bold>
-                  {item.score}
-                </Text>
-              </HStack>
-            );
-          }}
-          showsVerticalScrollIndicator={false}
-          keyExtractor={(item) => String(item.id)}
-          contentContainerStyle={{
-            gap: 10,
-            paddingBottom: 8,
-            margin: 8,
-            marginTop: 0,
-            borderWidth: 1,
-            borderColor: 'white',
-            flex: 1,
-            borderRadius: 20,
-            overflow:"hidden"
-          }}
-        />
+        <VStack className=" my-2 flex-1 border-[3px] border-amber-600 rounded-3xl bg-amber-400">
+          <HStack className="justify-between items-center p-4 ">
+            <Text size="xl" bold>
+              Leaderboard
+            </Text>
+          </HStack>
+          <Box className="flex-1 bg-amber-200 border-2 border-amber-500 m-2 mt-0  rounded-2xl overflow-hidden">
+            <FlatList
+              data={leaders}
+              renderItem={({ index, item }) => {
+                return (
+                  <HStack space="md" className="items-center justify-between px-2">
+                    <HStack space="md" className="items-center">
+                      <Text size="lg" bold>
+                        {index + 1}
+                      </Text>
+                      <Avatar size="md">
+                        <AvatarFallbackText>{item.full_name}</AvatarFallbackText>
+                        <AvatarImage
+                          source={{
+                            uri: item.picture,
+                          }}
+                          alt="profile"
+                        />
+                      </Avatar>
+                      <Text size="lg" bold>
+                        {item.full_name}
+                      </Text>
+                    </HStack>
+                    <Text size="lg" bold>
+                      {item.amount}
+                    </Text>
+                  </HStack>
+                );
+              }}
+              contentContainerStyle={{ gap: 10, padding: 8 }}
+              onEndReached={loadMore}
+              onEndReachedThreshold={0.4}
+              ListFooterComponent={isFetching ? <ActivityIndicator size="small" color="#000" style={{ marginVertical: 10 }} /> : null}
+            />
+          </Box>
+        </VStack>
       </VStack>
     </SafeAreaView>
   );

@@ -27,7 +27,7 @@ import { useEffect, useState } from 'react';
 import { Heading } from '@/components/ui/heading';
 
 import { Button, ButtonText } from '@/components/ui/button';
-import { socket } from '@/socket';
+import { getSocket } from '@/socket';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { CloseIcon, Icon } from '@/components/ui/icon';
@@ -35,21 +35,23 @@ import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar'
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Input, InputField } from '@/components/ui/input';
+
 export default function TabOneScreen() {
+  const socket = getSocket();
   const insets = useSafeAreaInsets();
   const [selectedGameId, setSelectedGameId] = useState('');
   const [activeGames, setActiveGames] = useState<{ id: string; type: string; amount: string; maxPlayers: number; players: any[] }[]>([]);
   const user = useSelector((state: RootState) => state.user.data);
 
   useEffect(() => {
-    socket.on('games:update', (updatedGames) => {
-      setActiveGames(updatedGames);
-    });
+    if (!socket) return;
+
+    socket.on('games:update', (updatedGames) => setActiveGames(updatedGames));
 
     return () => {
-      socket.off('games:update');
+      socket?.off('games:update');
     };
-  }, []);
+  }, [socket]);
 
   const renderItem = ({ item }: { item: { id: string; type: string; amount: string; maxPlayers: number; players: any[] } }) => {
     const game = games.find((g) => g.title === item.type);
@@ -100,11 +102,11 @@ export default function TabOneScreen() {
                 <FontAwesome5 name="coins" size={12} color="white" />
               </Box>
               <Text className="h-6 px-2 " bold>
-                3000
+                {user?.coins}
               </Text>
-              <Box className="size-5 bg-green-600 flex items-center justify-center ">
+              <Pressable className="size-5 bg-green-600 flex items-center justify-center " onPress={() => router.push('/(app)/wallet')}>
                 <FontAwesome5 name="plus" size={12} color="white" />
-              </Box>
+              </Pressable>
             </HStack>
 
             <HStack className="items-center">
@@ -112,11 +114,11 @@ export default function TabOneScreen() {
                 <FontAwesome5 name="coins" size={12} color="white" />
               </Box>
               <Text className="h-6 px-2" bold>
-                3000
+                {user?.rewards}
               </Text>
-              <Box className="size-5 bg-green-600 flex items-center justify-center">
+              <Pressable className="size-5 bg-green-600 flex items-center justify-center" onPress={() => router.push('/(app)/referral')}>
                 <FontAwesome5 name="plus" size={12} color="white" />
-              </Box>
+              </Pressable>
             </HStack>
           </HStack>
         </HStack>
@@ -138,25 +140,13 @@ export default function TabOneScreen() {
               <InputField placeholder="Search" />
             </Input>
           </HStack>
-
-          <FlatList
-            data={activeGames}
-            renderItem={renderItem}
-            showsVerticalScrollIndicator={false}
-            keyExtractor={(item) => String(item.id)}
-            contentContainerStyle={{
-              gap: 10,
-              padding: 8,
-              paddingBottom: 8,
-              margin: 8,
-              marginTop: 0,
-              borderWidth: 3,
-              borderColor: '#f59e0b',
-              flex: 1,
-              borderRadius: 20,
-              backgroundColor: '#fde68a',
-            }}
-          />
+          <View className="flex-1 bg-amber-200 border-2 border-amber-500 m-2 mt-0  rounded-2xl overflow-hidden">
+            <FlatList
+              data={activeGames.filter((g) => g.players.length < g.maxPlayers)}
+              renderItem={renderItem}
+              contentContainerStyle={{ gap: 10, padding: 8 }}
+            />
+          </View>
         </VStack>
         <Box className="p-2 px-6">
           <Text bold>helljkshfkjs hdlhsdlv sdkvhskdvhsd sdjvhsjhdv shdjvghsjdvo</Text>
@@ -177,11 +167,7 @@ export default function TabOneScreen() {
             </Text>
           </ModalHeader>
           <ModalBody>
-            <Text>
-              Are you sure you want to join?
-              {/* By accepting the modal, you will bet {selectedGame?.amount} game coins for a chance to win
-              {Number(selectedGame?.amount) * Number(selectedGame?.maxPlayers)} by playing against {selectedGame?.maxPlayers} players. */}
-            </Text>
+            <Text>Are you sure you want to join?</Text>
           </ModalBody>
           <ModalFooter>
             <Button

@@ -43,7 +43,7 @@ export default function SettingsScreen() {
   const dispatch = useDispatch();
   function handleLogout() {
     dispatch(logout());
-    router.replace('/signin');
+    router.replace('/(app)/signin');
   }
   const [image, setImage] = useState('');
   const user = useSelector((state: RootState) => state.user.data);

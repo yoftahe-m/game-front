@@ -53,7 +53,7 @@ function RootLayoutNav() {
           {/* <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}> */}
 
           <AuthProvider>
-            <Slot />
+            <Slot screenOptions={{ headerStyle: { backgroundColor: '#0c2665' },}}/>
             <StatusBar style='light' />
           </AuthProvider>
           {/* </ThemeProvider> */}
@@ -68,7 +68,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   const { refreshToken } = useSelector((state: RootState) => state.user);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
   useEffect(() => {
-    if (isRehydrated && !refreshToken) router.replace('/signin');
+    if (isRehydrated && !refreshToken) router.replace('/(app)/signin');
     else if (isRehydrated && refreshToken) {
       setIsFirstLoad(false);
       router.replace('/(app)/(tabs)');

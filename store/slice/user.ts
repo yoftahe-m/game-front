@@ -7,26 +7,20 @@ interface User {
   fullName: string;
   profilePic?: string;
   created_at: string;
+  coins: number;
+  rewards: number;
 }
 
 type UserState = {
   accessToken: string | null;
   refreshToken: string | null;
   data: User | null;
-  coord: {
-    latitude: number;
-    longitude: number;
-  };
 };
 
 const initialState: UserState = {
   accessToken: null,
   refreshToken: null,
   data: null,
-  coord: {
-    latitude: 0,
-    longitude: 0,
-  },
 };
 
 const userSlice = createSlice({
@@ -52,17 +46,7 @@ const userSlice = createSlice({
     setUser: (state, action: PayloadAction<{ user: User }>) => {
       state.data = action.payload.user;
     },
-    setCoord: (
-      state,
-      action: PayloadAction<{
-        coord: {
-          latitude: number;
-          longitude: number;
-        };
-      }>
-    ) => {
-      state.coord = action.payload.coord;
-    },
+
     logout: (state) => {
       state.accessToken = null;
       state.refreshToken = null;
@@ -71,5 +55,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { setCredentials, signin, logout, setUser, setCoord } = userSlice.actions;
+export const { setCredentials, signin, logout, setUser } = userSlice.actions;
 export default userSlice.reducer;

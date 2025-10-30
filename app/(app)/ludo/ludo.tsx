@@ -9,17 +9,18 @@ import { Center } from '@/components/ui/center';
 import { HStack } from '@/components/ui/hstack';
 
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Pressable, Animated, Easing, Dimensions } from 'react-native';
+import { View, Pressable, Animated, Easing, Dimensions ,StyleSheet} from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Dice1, Dice2, Dice3, Dice4, Dice5, Dice6 } from 'lucide-react-native';
 import { LUDO_BOARD } from './_constants/board';
-import { socket } from '@/socket';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { getSocket } from '@/socket';
 export default function LudoScreen() {
+  const socket = getSocket();
   const router = useRouter();
   const user = useSelector((state: RootState) => state.user.data);
   const { game } = useLocalSearchParams<{ game: string }>();
@@ -53,36 +54,24 @@ export default function LudoScreen() {
     return colors[color]?.[shade] || '#e2e8f0'; // Default to gray-300
   };
   useEffect(() => {
+    if (!socket) return;
     socket.on('gameUpdate', (gameUpdate) => {
       setPlayingGame(gameUpdate);
     });
 
     return () => {
-      socket.off('gameUpdate');
+      socket?.off('gameUpdate');
     };
   }, []);
 
   const movePin = (pinHome: string) => {
+    if (!socket) return;
     console.log('moving', pinHome);
     socket.emit('ludo:movePin', { userId: user!.id, gameId: playingGame.id, pinHome });
   };
 
-  function getGradient(color: 'red' | 'green' | 'blue' | 'yellow'): readonly [string, string] {
-    switch (color) {
-      case 'red':
-        return ['#FF2400', '#A60000'] as const; // glossy red
-      case 'green':
-        return ['#00C853', '#009624'] as const; // glossy green
-      case 'blue':
-        return ['#1F51FF', '#002D9B'] as const; // glossy blue
-      case 'yellow':
-        return ['#FFD300', '#C99700'] as const; // glossy yellow
-      default:
-        return ['#B0B0B0', '#707070'] as const; // glossy gray
-    }
-  }
 
-  console.log('game', playingGame.options.roll, playingGame.options.rolledBy, playingGame.turn);
+
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -149,15 +138,15 @@ export default function LudoScreen() {
             ))}
             <VStack className="absolute top-0 bottom-0 left-0 right-0 z-10">
               <Box className="w-full h-[40%]   flex flex-row">
-                <LinearGradient colors={getGradient('red')} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1, width: '40%' }} />
+                <ColorPanel color="red" />
                 <Box style={{ width: '20%' }} />
-                <LinearGradient colors={getGradient('blue')} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1, width: '40%' }} />
+       <ColorPanel color="blue" />
               </Box>
               <Box style={{ height: '20%' }} />
               <Box className="w-full h-[40%]   flex flex-row">
-                <LinearGradient colors={getGradient('green')} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1, width: '40%' }} />
+                <ColorPanel color="green" />
                 <Box style={{ width: '20%' }} />
-                <LinearGradient colors={getGradient('yellow')} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={{ flex: 1, width: '40%' }} />
+                 <ColorPanel color="yellow" />
               </Box>
             </VStack>
           </Box>
@@ -200,10 +189,12 @@ function Player({
   gameId: String;
   roll: number;
 }) {
+  const socket = getSocket();
   const user = useSelector((state: RootState) => state.user.data);
   const [rolling, setRolling] = useState(false);
   const rollDie = () => {
     console.log('rolling');
+    if (!socket) return;
     socket.emit('ludo:rollDie', { userId: user!.id, gameId });
   };
 
@@ -253,3 +244,44 @@ function Player({
     </VStack>
   );
 }
+
+type ColorType = 'red' | 'blue' | 'green' | 'yellow';
+
+const colorMap: Record<ColorType, { gradient: readonly [string, string]; border: string }> = {
+  red: { gradient: ['#ff2a2a', '#d80000'], border: '#d80000' },
+  blue: { gradient: ['#3b82f6', '#1d4ed8'], border: '#1d4ed8' },
+  green: { gradient: ['#22c55e', '#15803d'], border: '#15803d' },
+  yellow: { gradient: ['#facc15', '#ca8a04'], border: '#ca8a04' },
+};
+
+export const ColorPanel = ({ color }: { color: ColorType }) => {
+  const gradient = colorMap[color].gradient;
+  const borderColor = colorMap[color].border;
+
+  return (
+    <LinearGradient colors={gradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={[styles.panel, { borderColor }]}>
+      <View style={styles.innerGrid} />
+    </LinearGradient>
+  );
+};
+
+const styles = StyleSheet.create({
+  panel: {
+    width: "40%",
+    height: "100%",
+    borderRadius: 10,
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.4,
+    shadowRadius: 15,
+    shadowOffset: { width: 0, height: 5 },
+  },
+  innerGrid: {
+    width: '85%',
+    aspectRatio: 1,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    borderRadius: 8,
+  },
+});
