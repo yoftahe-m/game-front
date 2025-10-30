@@ -40,6 +40,7 @@ export default function TabOneScreen() {
   const socket = getSocket();
   const insets = useSafeAreaInsets();
   const [selectedGameId, setSelectedGameId] = useState('');
+  const [depositModal, setDepositModal] = useState(false);
   const [activeGames, setActiveGames] = useState<{ id: string; type: string; amount: string; maxPlayers: number; players: any[] }[]>([]);
   const user = useSelector((state: RootState) => state.user.data);
 
@@ -72,7 +73,16 @@ export default function TabOneScreen() {
             </Text>
           </VStack>
         </HStack>
-        <Button className="bg-green-600 focus:bg-green-500 hover:bg-red-500" onPress={() => setSelectedGameId(item.id)}>
+        <Button
+          className="bg-green-600 focus:bg-green-500 hover:bg-red-500"
+          onPress={() => {
+            if (user!.coins < Number(item.amount)) {
+              setDepositModal(true)
+            } else {
+              setSelectedGameId(item.id);
+            }
+          }}
+        >
           <ButtonText>Join</ButtonText>
         </Button>
       </HStack>
@@ -188,6 +198,46 @@ export default function TabOneScreen() {
               className="bg-green-600"
             >
               <ButtonText>Join</ButtonText>
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+      <Modal
+        isOpen={depositModal}
+        onClose={() => {
+          setDepositModal(false);
+        }}
+        size="md"
+      >
+        <ModalBackdrop />
+        <ModalContent className="bg-[#071843] border-0">
+          <ModalHeader>
+            <Text size="xl" bold>
+              You don't have enough coins
+            </Text>
+          </ModalHeader>
+          <ModalBody>
+            <Text>Deposit more coin</Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              variant="outline"
+              action="secondary"
+              className="mr-3"
+              onPress={() => {
+                setDepositModal(false);
+              }}
+            >
+              <ButtonText>Cancel</ButtonText>
+            </Button>
+            <Button
+              onPress={() => {
+                router.push({ pathname: '/wallet' });
+               setDepositModal(false)
+              }}
+              className="bg-green-600"
+            >
+              <ButtonText>Deposit</ButtonText>
             </Button>
           </ModalFooter>
         </ModalContent>

@@ -1,13 +1,33 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui/text';
 import { Box } from '@/components/ui/box';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
-import { router } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useDispatch } from 'react-redux';
+import { setCoins } from '@/store/slice/user';
 
 export default function LostScreen() {
+  const { game } = useLocalSearchParams<{ game: string }>();
+  const dispatch = useDispatch();
+  const parsedGame = JSON.parse(game);
+  console.log(parsedGame);
+  const updateCoins = () => {
+    dispatch(setCoins({ amount: Number(-parsedGame.amount )}));
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      // This runs when the screen is focused
+
+      return () => {
+        updateCoins();
+      };
+    }, [])
+  );
+
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <Box className="flex-1 items-center justify-center px-6 text-center">
@@ -36,3 +56,4 @@ export default function LostScreen() {
     </SafeAreaView>
   );
 }
+

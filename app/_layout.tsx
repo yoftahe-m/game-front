@@ -6,7 +6,7 @@ import { useFonts } from 'expo-font';
 import * as SplashScreen from 'expo-splash-screen';
 import { useEffect, useState } from 'react';
 import { useColorScheme } from '@/components/useColorScheme';
-import { router, Slot, usePathname } from 'expo-router';
+import { router, Slot, Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Fab, FabIcon } from '@/components/ui/fab';
 import { MoonIcon, SunIcon } from '@/components/ui/icon';
@@ -53,8 +53,18 @@ function RootLayoutNav() {
           {/* <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}> */}
 
           <AuthProvider>
-            <Slot screenOptions={{ headerStyle: { backgroundColor: '#0c2665' },}}/>
-            <StatusBar style='light' />
+            {/* <Slot screenOptions={{ headerStyle: { backgroundColor: 'red' },}}/> */}
+            <Stack
+              screenOptions={{
+                contentStyle: { backgroundColor: '#071843' },
+              }}
+            >
+              <Stack.Screen name="(app)" options={{ headerShown: false }} />
+              <Stack.Screen name="signin" options={{ headerShown: false }} />
+              <Stack.Screen name="signup" options={{ headerShown: false }} />
+            </Stack>
+
+            <StatusBar style="light" />
           </AuthProvider>
           {/* </ThemeProvider> */}
         </GluestackUIProvider>
@@ -68,7 +78,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
   const { refreshToken } = useSelector((state: RootState) => state.user);
   const [isFirstLoad, setIsFirstLoad] = useState(true);
   useEffect(() => {
-    if (isRehydrated && !refreshToken) router.replace('/(app)/signin');
+    if (isRehydrated && !refreshToken) router.replace('/signin');
     else if (isRehydrated && refreshToken) {
       setIsFirstLoad(false);
       router.replace('/(app)/(tabs)');

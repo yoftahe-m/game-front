@@ -28,10 +28,10 @@ export default function TicTacToeScreen() {
 
   useEffect(() => {
     if (!socket) return;
-    socket.on('gameOver', (gameOver) => {
+    socket.on('gameOver', (game) => {
       router.replace({
-        pathname: gameOver.winner === 'draw' ? '/(app)/draw' : gameOver.winner === user?.id ? '/(app)/won' : '/(app)/lost',
-        params: { gameOver },
+        pathname: game.winner === 'draw' ? '/(app)/draw' : game.winner === user?.id ? '/(app)/won' : '/(app)/lost',
+        params: { game: JSON.stringify(game) },
       });
     });
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui/text';
@@ -7,7 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
 import { router } from 'expo-router';
 
+
 export default function DrawScreen() {
+
+
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <Box className="flex-1 items-center justify-center px-6 text-center">
@@ -29,10 +32,13 @@ export default function DrawScreen() {
           Better luck next time! Your efforts were commendable.
         </Text>
 
-        <Button size="lg" variant="solid" onPress={() => router.push('/loading')} className="w-full max-w-xs rounded-xl">
+        <Button size="lg" variant="solid" onPress={() => router.back()} className="w-full max-w-xs rounded-xl">
           <Text className="font-bold">Play Again</Text>
         </Button>
       </Box>
     </SafeAreaView>
   );
+}
+function setCoins(arg0: { amount: number }): any {
+  throw new Error('Function not implemented.');
 }

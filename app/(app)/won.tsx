@@ -1,11 +1,26 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui/text';
 import { Box } from '@/components/ui/box';
 import { Button } from '@/components/ui/button';
 import { Image } from '@/components/ui/image';
-import { router } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+import { useDispatch } from 'react-redux';
+import { setCoins } from '@/store/slice/user';
 export default function WonScreen() {
+  const { game } = useLocalSearchParams<{ game: string }>();
+  const dispatch = useDispatch();
+  const parsedGame = JSON.parse(game);
+  const updateCoins = () => {
+    dispatch(setCoins({ amount: Number(parsedGame.amount) }));
+  };
+  useFocusEffect(
+    useCallback(() => {
+      updateCoins();
+      return () => {};
+    }, [])
+  );
+
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <Box>

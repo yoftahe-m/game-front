@@ -115,7 +115,15 @@ export default function SignupScreen() {
                     <InputSlot className="pl-3">
                       <Feather name="mail" size={16} color={'white'} />
                     </InputSlot>
-                    <InputField placeholder="Email" keyboardType="email-address" value={value} onChangeText={onChange} onBlur={onBlur} />
+                    <InputField
+                      placeholder="Email"
+                      keyboardType="email-address"
+                      value={value}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                      className="text-white"
+                      autoCapitalize="none"
+                    />
                   </Input>
                 </VStack>
                 {isInvalid('email') && (
@@ -148,7 +156,14 @@ export default function SignupScreen() {
                     <InputSlot className="pl-3">
                       <Feather name="lock" size={16} color={'white'} />
                     </InputSlot>
-                    <InputField placeholder="Password" secureTextEntry={!showPassword} value={value} onChangeText={onChange} onBlur={onBlur} />
+                    <InputField
+                      placeholder="Password"
+                      secureTextEntry={!showPassword}
+                      value={value}
+                      onChangeText={onChange}
+                      onBlur={onBlur}
+                      className="text-white"
+                    />
                     <InputSlot className="pr-3" onPress={handleTogglePasswordVisibility}>
                       {showPassword ? <Feather name="eye" size={16} color={'white'} /> : <Feather name="eye-off" size={16} color={'white'} />}
                     </InputSlot>
@@ -174,7 +189,7 @@ export default function SignupScreen() {
           </Button>
 
           <Center className=" flex-row">
-            <Text>Already have an account? </Text>
+            <Text>Don't have an account? </Text>
             <Pressable onPress={() => router.replace('/signup')}>
               <Text className="text-[#73d264]" bold>
                 Sign Up
