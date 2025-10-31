@@ -54,6 +54,16 @@ export default function TabOneScreen() {
     };
   }, [socket]);
 
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.emit('games:get');
+
+    return () => {
+      socket?.off('games:get');
+    };
+  }, [socket]);
+
   const renderItem = ({ item }: { item: { id: string; type: string; amount: string; maxPlayers: number; players: any[] } }) => {
     const game = games.find((g) => g.title === item.type);
     return (
@@ -77,7 +87,7 @@ export default function TabOneScreen() {
           className="bg-green-600 focus:bg-green-500 hover:bg-red-500"
           onPress={() => {
             if (user!.coins < Number(item.amount)) {
-              setDepositModal(true)
+              setDepositModal(true);
             } else {
               setSelectedGameId(item.id);
             }
@@ -233,7 +243,7 @@ export default function TabOneScreen() {
             <Button
               onPress={() => {
                 router.push({ pathname: '/wallet' });
-               setDepositModal(false)
+                setDepositModal(false);
               }}
               className="bg-green-600"
             >
