@@ -25,7 +25,7 @@ const options = [
     subtitle: 'Buy and withdraw a coin',
   },
   {
-    link: '/referral',
+    link: '/(app)/play',
     icon: 'plus-circle',
     title: 'Referral',
     subtitle: 'Invite friends to earn reward',

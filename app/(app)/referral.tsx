@@ -1,45 +1,74 @@
-import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, StyleSheet, ImageBackground } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
+import bg from '@/assets/images/ss.png';
+import { Box } from '@/components/ui/box';
+import { HStack } from '@/components/ui/hstack';
+import { Text } from '@/components/ui/text';
+import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
+import { EditIcon } from '@/components/ui/icon';
+import { Modal, ModalBackdrop, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter } from '@/components/ui/modal';
+import { FontAwesome5 } from '@expo/vector-icons';
 const App = () => {
+  const [forfeitModal, setForfeitModal] = useState(false);
   return (
-    <SafeAreaView style={styles.container}>
-      <LinearGradient colors={['#ff2a2a', '#d80000']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.panel}>
-        <View className="w-[85%] aspect-square bg-white/20 rounded-lg" />
-      </LinearGradient>
+    <SafeAreaView style={{ flex: 1 }}>
+      <HStack className="justify-between items-center bg-[#0c2665] p-2">
+        <Button size="lg" className="rounded-full size-5" onPress={() => setForfeitModal(true)}>
+          <ButtonIcon as={EditIcon} />
+        </Button>
+        <HStack space="md">
+          <HStack space="xs">
+            <Text bold>Stake: 5000</Text>
+            <Box className="size-6 bg-amber-300 flex items-center justify-center rounded-full">
+              <FontAwesome5 name="coins" size={12} color="white" />
+            </Box>
+          </HStack>
+          <HStack space="xs">
+            <Text bold>Win amount: 10000</Text>
+            <Box className="size-6 bg-amber-300 flex items-center justify-center rounded-full">
+              <FontAwesome5 name="coins" size={12} color="white" />
+            </Box>
+          </HStack>
+        </HStack>
+      </HStack>
+      <Modal
+        isOpen={forfeitModal}
+        onClose={() => {
+          setForfeitModal(false);
+        }}
+        size="md"
+      >
+        <ModalBackdrop />
+        <ModalContent className="bg-[#071843] border-0">
+          <ModalHeader>
+            <Text size="xl" bold>
+              Forfeit
+            </Text>
+          </ModalHeader>
+          <ModalBody>
+            <Text>Are you sure you want to leave?</Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              variant="outline"
+              action="secondary"
+              className="mr-3"
+              onPress={() => {
+                setForfeitModal(false);
+              }}
+            >
+              <ButtonText>Cancel</ButtonText>
+            </Button>
+            <Button className="bg-green-600">
+              <ButtonText>Forfeit</ButtonText>
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: '#4b5563', // gray-700
-  },
-
-  panel: {
-    width: 180,
-    height: 180,
-    borderRadius: 16,
-    borderWidth: 2,
-    borderColor: '#a80000',
-    justifyContent: 'center',
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.4,
-    shadowRadius: 15,
-    shadowOffset: { width: 0, height: 5 },
-  },
-  innerGrid: {
-    width: '85%',
-    aspectRatio: 1,
-    backgroundColor: 'rgba(255,255,255,0.2)',
-    borderRadius: 8,
-  },
-});
 
 export default App;

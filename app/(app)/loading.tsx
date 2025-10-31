@@ -3,9 +3,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Box } from '@/components/ui/box';
 import { Spinner } from '@/components/ui/spinner';
 import { Text } from '@/components/ui/text';
-import { router, useLocalSearchParams } from 'expo-router';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { getSocket } from '@/socket';
-import { FlatList, ScrollView } from 'react-native';
+import { BackHandler, FlatList, ScrollView } from 'react-native';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
 import { Avatar, AvatarFallbackText, AvatarImage, AvatarBadge } from '@/components/ui/avatar';
@@ -17,7 +17,24 @@ export default function LoadingScreen() {
   const { type, maxPlayers, amount, gameId } = useLocalSearchParams();
   const [game, setGame] = useState<{ id: string; type: string; amount: string; maxPlayers: number; players: any[] }>();
   const user = useSelector((state: RootState) => state.user.data);
-   
+
+  function leaveGame() {
+    if (!socket || !game) return;
+    socket.emit('leaveGame', { gameId: game.id });
+    router.back();
+  }
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        leaveGame();
+        return true; // prevent default back
+      };
+      const subscription = BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      return () => subscription.remove();
+    }, [game])
+  );
+
   useEffect(() => {
     if (!socket) return;
     if (gameId) {
@@ -51,22 +68,15 @@ export default function LoadingScreen() {
   useEffect(() => {
     if (!socket) return;
     socket.on('gameStarted', (game) => {
-      switch (game.type) {
-        case 'Tic Tac Toe':
-          router.replace({ pathname: '/tic-tac-toe', params: { game: JSON.stringify(game) } });
-          break;
-        case 'Ludo':
-          router.replace({ pathname: '/(app)/ludo/ludo', params: { game: JSON.stringify(game) } });
-          break;
-        default:
-          break;
-      }
+      router.replace({ pathname: '/(app)/play', params: { game: JSON.stringify(game) } });
     });
 
     return () => {
       socket?.off('gameStarted');
     };
   }, []);
+
+
 
   return (
     <SafeAreaView style={{ flex: 1, paddingHorizontal: 8 }}>

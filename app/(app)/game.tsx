@@ -19,9 +19,11 @@ import {
 } from '@/components/ui/actionsheet';
 import { useState } from 'react';
 import WheelPicker from '@quidone/react-native-wheel-picker';
-import { set } from 'react-hook-form';
+import { Modal, ModalBackdrop, ModalBody, ModalContent, ModalFooter, ModalHeader } from '@/components/ui/modal';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 
-const amount = [
+const amounts = [
   { value: 5, label: '5' },
   { value: 10, label: '10' },
   { value: 15, label: '15' },
@@ -31,12 +33,14 @@ const amount = [
 ];
 
 export default function GameScreen() {
+  const [depositModal, setDepositModal] = useState(false);
   const { gameId } = useLocalSearchParams();
   const game = games.find((g) => g.id === Number(gameId));
   const [showActionsheet, setShowActionsheet] = useState(false);
   const handleClose = () => setShowActionsheet(false);
-  const [value, setValue] = useState(5);
+  const [amount, setAmount] = useState(5);
   const [maxPlayers, setMaxPlayers] = useState(2);
+  const user = useSelector((state: RootState) => state.user.data);
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <ScrollView contentContainerStyle={{ paddingHorizontal: 8, paddingBottom: 20, flex: 1 }}>
@@ -71,7 +75,7 @@ export default function GameScreen() {
             <Text size="lg" bold>
               Game Options
             </Text>
-            <WheelPicker data={amount} value={value} onValueChanged={({ item: { value } }) => setValue(value)} enableScrollByTapOnItem={true} />
+            <WheelPicker data={amounts} value={amount} onValueChanged={({ item: { value } }) => setAmount(value)} enableScrollByTapOnItem={true} />
             <HStack space="sm" className="flex flex-row">
               <Button
                 className="h-12 flex-1"
@@ -94,7 +98,11 @@ export default function GameScreen() {
               className="h-12 w-full"
               onPress={() => {
                 handleClose();
-                router.push({ pathname: '/loading', params: { type: game?.title, maxPlayers: maxPlayers, amount: value } });
+                if (user!.coins < Number(amount)) {
+                  setDepositModal(true);
+                } else {
+                  router.push({ pathname: '/loading', params: { type: game?.title, maxPlayers: maxPlayers, amount: amount } });
+                }
               }}
             >
               <ButtonText>Play Now</ButtonText>
@@ -102,6 +110,46 @@ export default function GameScreen() {
           </VStack>
         </ActionsheetContent>
       </Actionsheet>
+      <Modal
+        isOpen={depositModal}
+        onClose={() => {
+          setDepositModal(false);
+        }}
+        size="md"
+      >
+        <ModalBackdrop />
+        <ModalContent className="bg-[#071843] border-0">
+          <ModalHeader>
+            <Text size="xl" bold>
+              You don't have enough coins
+            </Text>
+          </ModalHeader>
+          <ModalBody>
+            <Text>Deposit more coin</Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              variant="outline"
+              action="secondary"
+              className="mr-3"
+              onPress={() => {
+                setDepositModal(false);
+              }}
+            >
+              <ButtonText>Cancel</ButtonText>
+            </Button>
+            <Button
+              onPress={() => {
+                router.push({ pathname: '/wallet' });
+                setDepositModal(false);
+              }}
+              className="bg-green-600"
+            >
+              <ButtonText>Deposit</ButtonText>
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </SafeAreaView>
   );
 }

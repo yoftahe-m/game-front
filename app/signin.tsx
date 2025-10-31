@@ -44,9 +44,9 @@ export default function SignupScreen() {
     formState: { errors },
   } = useForm<FormData>({
     defaultValues: {
-      email: '',
+      email: 'yoftahemerkebu3@gmail.com',
       phone: '',
-      password: '',
+      password: '123456',
     },
     // Set 'all' to validate on blur, change, and submit
     mode: 'onBlur',

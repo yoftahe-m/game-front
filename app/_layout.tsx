@@ -14,6 +14,7 @@ import { Provider, useSelector } from 'react-redux';
 import { persistor, RootState, store } from '@/store';
 import { ActivityIndicator, View } from 'react-native';
 import { PersistGate } from 'redux-persist/integration/react';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -49,25 +50,27 @@ function RootLayoutNav() {
   return (
     <Provider store={store}>
       <PersistGate loading={<ActivityIndicator size="large" />} persistor={persistor}>
-        <GluestackUIProvider>
-          {/* <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}> */}
+        <GestureHandlerRootView>
+          <GluestackUIProvider>
+            {/* <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}> */}
 
-          <AuthProvider>
-            {/* <Slot screenOptions={{ headerStyle: { backgroundColor: 'red' },}}/> */}
-            <Stack
-              screenOptions={{
-                contentStyle: { backgroundColor: '#071843' },
-              }}
-            >
-              <Stack.Screen name="(app)" options={{ headerShown: false }} />
-              <Stack.Screen name="signin" options={{ headerShown: false }} />
-              <Stack.Screen name="signup" options={{ headerShown: false }} />
-            </Stack>
+            <AuthProvider>
+              {/* <Slot screenOptions={{ headerStyle: { backgroundColor: 'red' },}}/> */}
+              <Stack
+                screenOptions={{
+                  contentStyle: { backgroundColor: '#071843' },
+                }}
+              >
+                <Stack.Screen name="(app)" options={{ headerShown: false }} />
+                <Stack.Screen name="signin" options={{ headerShown: false }} />
+                <Stack.Screen name="signup" options={{ headerShown: false }} />
+              </Stack>
 
-            <StatusBar style="light" />
-          </AuthProvider>
-          {/* </ThemeProvider> */}
-        </GluestackUIProvider>
+              <StatusBar style="light" />
+            </AuthProvider>
+            {/* </ThemeProvider> */}
+          </GluestackUIProvider>
+        </GestureHandlerRootView>
       </PersistGate>
     </Provider>
   );

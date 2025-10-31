@@ -10,23 +10,23 @@ import { useDispatch } from 'react-redux';
 import { setCoins } from '@/store/slice/user';
 
 export default function LostScreen() {
-  const { game } = useLocalSearchParams<{ game: string }>();
-  const dispatch = useDispatch();
-  const parsedGame = JSON.parse(game);
-  console.log(parsedGame);
-  const updateCoins = () => {
-    dispatch(setCoins({ amount: Number(-parsedGame.amount )}));
-  };
+  // const { game } = useLocalSearchParams<{ game: string }>();
+  // const dispatch = useDispatch();
+  // const parsedGame = JSON.parse(game);
+  // console.log(parsedGame);
+  // const updateCoins = () => {
+  //   dispatch(setCoins({ amount: Number(-parsedGame.amount )}));
+  // };
 
-  useFocusEffect(
-    useCallback(() => {
-      // This runs when the screen is focused
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     // This runs when the screen is focused
 
-      return () => {
-        updateCoins();
-      };
-    }, [])
-  );
+  //     return () => {
+  //       updateCoins();
+  //     };
+  //   }, [])
+  // );
 
   return (
     <SafeAreaView className="flex-1 bg-gray-50">

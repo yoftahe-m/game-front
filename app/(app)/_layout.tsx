@@ -17,6 +17,7 @@ export default function AppLayout() {
         headerStyle: { backgroundColor: '#0c2665' },
         contentStyle: { backgroundColor: '#071843' },
         headerTitleStyle: { color: 'white' },
+        headerShown:false
       }}
     >
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

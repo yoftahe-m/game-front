@@ -8,18 +8,18 @@ import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useDispatch } from 'react-redux';
 import { setCoins } from '@/store/slice/user';
 export default function WonScreen() {
-  const { game } = useLocalSearchParams<{ game: string }>();
-  const dispatch = useDispatch();
-  const parsedGame = JSON.parse(game);
-  const updateCoins = () => {
-    dispatch(setCoins({ amount: Number(parsedGame.amount) }));
-  };
-  useFocusEffect(
-    useCallback(() => {
-      updateCoins();
-      return () => {};
-    }, [])
-  );
+  // const { game } = useLocalSearchParams<{ game: string }>();
+  // const dispatch = useDispatch();
+  // const parsedGame = JSON.parse(game);
+  // const updateCoins = () => {
+  //   dispatch(setCoins({ amount: Number(parsedGame.amount) }));
+  // };
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     updateCoins();
+  //     return () => {};
+  //   }, [])
+  // );
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
