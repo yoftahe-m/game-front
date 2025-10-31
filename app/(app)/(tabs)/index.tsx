@@ -159,6 +159,9 @@ export default function FullScreenRadialGradientWithContent() {
 
             <JoinButton color="green" />
             <JoinButton color="yellow" />
+            <Pressable onPress={() => router.push('/(app)/terms')}>
+              <Text>Terms and conditions</Text>
+            </Pressable>
           </HStack>
         </VStack>
       </VStack>
@@ -219,7 +222,7 @@ export function JoinButton({ color }: { color: 'yellow' | 'green' }) {
             paddingHorizontal: 35,
             borderRadius: 8,
             borderWidth: 1,
-            borderColor: "#fff2cc",
+            borderColor: '#fff2cc',
             justifyContent: 'center',
             alignItems: 'center',
             flex: 1,

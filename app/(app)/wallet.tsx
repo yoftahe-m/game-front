@@ -11,13 +11,16 @@ import { FlatList, ActivityIndicator } from 'react-native';
 import { Box } from '@/components/ui/box';
 import { useGetTransactionHistoryQuery } from '@/store/service/transaction';
 import type { TransactionI, TransactionsI } from '@/store/service/transaction';
+import { Input, InputField } from '@/components/ui/input';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store';
 
 export default function WalletScreen() {
   const [showDepositModal, setDepositModal] = useState(false);
   const [showWithdrawModal, setWithdrawModal] = useState(false);
   const [transactions, setTransactions] = useState<TransactionI[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
-
+  const user = useSelector((state: RootState) => state.user.data);
   const { data, isSuccess, isFetching } = useGetTransactionHistoryQuery({
     page: currentPage,
     size: 5,
@@ -85,22 +88,34 @@ export default function WalletScreen() {
       {/* Deposit Modal */}
       <Modal isOpen={showDepositModal} onClose={() => setDepositModal(false)} size="md">
         <ModalBackdrop />
-        <ModalContent>
+        <ModalContent className="bg-[#071843] border-0">
           <ModalHeader>
-            <Heading size="lg">Deposit</Heading>
-            <ModalCloseButton>
-              <Icon as={CloseIcon} />
-            </ModalCloseButton>
+            <Text size="lg" bold>
+              Deposit
+            </Text>
           </ModalHeader>
           <ModalBody>
-            <Text>Deposit modal body.</Text>
+            <VStack space="md">
+              <VStack space="xs">
+                <Text>Deposit Phone Number</Text>
+                <Input variant="outline" size="md" isDisabled={true} isInvalid={false} isReadOnly={false}>
+                  <InputField placeholder="Enter phone number here..." value={user?.phone} className="text-white" />
+                </Input>
+              </VStack>
+              <VStack space="xs">
+                <Text>Amount</Text>
+                <Input variant="outline" size="md" isDisabled={false} isInvalid={false} isReadOnly={false}>
+                  <InputField placeholder="Enter Amount here..." className="text-white" />
+                </Input>
+              </VStack>
+            </VStack>
           </ModalBody>
           <ModalFooter>
             <Button variant="outline" action="secondary" className="mr-3" onPress={() => setDepositModal(false)}>
               <ButtonText>Cancel</ButtonText>
             </Button>
             <Button onPress={() => setDepositModal(false)}>
-              <ButtonText>Save</ButtonText>
+              <ButtonText>Deposit</ButtonText>
             </Button>
           </ModalFooter>
         </ModalContent>
@@ -109,22 +124,34 @@ export default function WalletScreen() {
       {/* Withdraw Modal */}
       <Modal isOpen={showWithdrawModal} onClose={() => setWithdrawModal(false)} size="md">
         <ModalBackdrop />
-        <ModalContent>
+        <ModalContent className="bg-[#071843] border-0">
           <ModalHeader>
-            <Heading size="lg">Withdraw</Heading>
-            <ModalCloseButton>
-              <Icon as={CloseIcon} />
-            </ModalCloseButton>
+            <Text size="lg" bold>
+              Withdraw
+            </Text>
           </ModalHeader>
           <ModalBody>
-            <Text>Withdraw modal body.</Text>
+            <VStack space="md">
+              <VStack space="xs">
+                <Text>Withdraw Phone Number</Text>
+                <Input variant="outline" size="md" isDisabled={true} isInvalid={false} isReadOnly={false}>
+                  <InputField placeholder="Enter phone number here..." value={user?.phone} className="text-white" />
+                </Input>
+              </VStack>
+              <VStack space="xs">
+                <Text>Amount</Text>
+                <Input variant="outline" size="md" isDisabled={false} isInvalid={false} isReadOnly={false}>
+                  <InputField placeholder="Enter Amount here..." />
+                </Input>
+              </VStack>
+            </VStack>
           </ModalBody>
           <ModalFooter>
             <Button variant="outline" action="secondary" className="mr-3" onPress={() => setWithdrawModal(false)}>
               <ButtonText>Cancel</ButtonText>
             </Button>
             <Button onPress={() => setWithdrawModal(false)}>
-              <ButtonText>Save</ButtonText>
+              <ButtonText>Withdraw</ButtonText>
             </Button>
           </ModalFooter>
         </ModalContent>
