@@ -14,6 +14,8 @@ import type { TransactionI, TransactionsI } from '@/store/service/transaction';
 import { Input, InputField } from '@/components/ui/input';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
+import Money from '@/assets/icons/Money';
+import { Pressable } from '@/components/ui/pressable';
 
 export default function WalletScreen() {
   const [showDepositModal, setDepositModal] = useState(false);
@@ -23,7 +25,7 @@ export default function WalletScreen() {
   const user = useSelector((state: RootState) => state.user.data);
   const { data, isSuccess, isFetching } = useGetTransactionHistoryQuery({
     page: currentPage,
-    size: 5,
+    size: 20,
   });
 
   useEffect(() => {
@@ -43,40 +45,54 @@ export default function WalletScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, paddingHorizontal: 8 }}>
-      <VStack space="md" className="flex-1">
-        <Text className="text-center" size="2xl" bold>
-          3000 ETB
-        </Text>
+    <SafeAreaView className="flex-1 px-2 py-8">
+      <VStack space="3xl" className="flex-1">
+        <HStack space="md" className="items-center justify-center">
+          <Text size="4xl" bold>
+            {user?.coins}
+          </Text>
 
+          <Money />
+        </HStack>
         <HStack space="md">
-          <Button className="flex-1" onPress={() => setDepositModal(true)}>
-            <ButtonText>Deposit</ButtonText>
-          </Button>
-          <Button className="flex-1" onPress={() => setWithdrawModal(true)}>
-            <ButtonText>Withdraw</ButtonText>
-          </Button>
+          <Pressable className="flex-1">
+            <Box className="rounded-full px-5 py-2 bg-red-500 flex-1">
+              <Text className="text-center">Deposit</Text>
+            </Box>
+          </Pressable>
+          <Pressable className="flex-1">
+            <Box className="rounded-full px-5 py-2 bg-red-500 flex-1">
+              <Text className="text-center">Share</Text>
+            </Box>
+          </Pressable>
+          <Pressable className="flex-1">
+            <Box className="rounded-full px-5 py-2 bg-red-500 flex-1">
+              <Text className="text-center">Withdraw</Text>
+            </Box>
+          </Pressable>
         </HStack>
 
-        <VStack className="my-2 flex-1 border-[3px] border-amber-600 rounded-3xl bg-amber-400">
-          <HStack className="justify-between items-center p-4">
-            <Text size="xl" bold>
+        <VStack className=" flex-1 items-center">
+          <Box className=" rounded-3xl w-full flex-1 p-4 shadow-md" style={{ backgroundColor: '#1d3285' }}>
+            <Text size="2xl" bold className="text-center mb-4">
               Transaction History
             </Text>
-          </HStack>
 
-          <Box className="flex-1 bg-amber-200 border-2 border-amber-500 m-2 mt-0 rounded-2xl overflow-hidden">
             <FlatList
               data={transactions}
-              keyExtractor={(item) => item.id}
-              renderItem={({ item }) => (
-                <HStack className="justify-between px-4 py-2 bg-amber-100 rounded-lg">
-                  <Text>{item.type}</Text>
-                  <Text>{item.amount} ETB</Text>
-                  <Text>{new Date(item.created_at).toLocaleDateString()}</Text>
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({ index, item }) => (
+                <HStack className="flex flex-row justify-between items-center p-4 rounded-lg mb-2" space="md" style={{ backgroundColor: '#456bb0' }}>
+                  {/* <Text>{item.type}</Text> */}
+                  <Text className="flex-1">{item.game ? item.game : item.type}</Text>
+                  <Text>
+                    {(item.type === 'Won' || item.type === 'Deposit') && '+'}
+                    {(item.type === 'Lost' || item.type === 'Withdraw') && '-'}
+                    {Math.abs(item.amount)}
+                  </Text>
+                  <Text className="flex-1  text-right">{new Date(item.created_at).toLocaleDateString()}</Text>
                 </HStack>
               )}
-              contentContainerStyle={{ gap: 10, padding: 8 }}
               onEndReached={loadMore}
               onEndReachedThreshold={0.4}
               ListFooterComponent={isFetching ? <ActivityIndicator size="small" color="#000" style={{ marginVertical: 10 }} /> : null}

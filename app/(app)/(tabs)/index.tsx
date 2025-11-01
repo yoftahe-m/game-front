@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React, { useRef, useState } from 'react';
 import { Dimensions, View, StyleSheet, Image } from 'react-native';
 import Svg, { Defs, RadialGradient, Stop, Rect } from 'react-native-svg';
-import logo from '@/assets/images/logo.jpg';
+import logo from '@/assets/images/logo.png';
 import { VStack } from '@/components/ui/vstack';
 import { Center } from '@/components/ui/center';
 import { HStack } from '@/components/ui/hstack';
@@ -65,15 +65,18 @@ export default function FullScreenRadialGradientWithContent() {
     <>
       <View style={{ flex: 1 }}>
         {/* Radial Gradient Background */}
-        <Svg height={height} width={width} style={StyleSheet.absoluteFillObject}>
+        {/* <Svg height={height} width={width} style={StyleSheet.absoluteFillObject}>
           <Defs>
             <RadialGradient id="grad" cx="50%" cy="50%" r="70%">
               <Stop offset="0%" stopColor="#1242b0" />
-              <Stop offset="100%" stopColor="#0a1e45" />
+              <Stop offset="25%" stopColor="#0f368f" />
+              <Stop offset="50%" stopColor="#0b2c72" />
+              <Stop offset="75%" stopColor="#092259" />
+              <Stop offset="100%" stopColor="#071843" />
             </RadialGradient>
           </Defs>
           <Rect width="100%" height="100%" fill="url(#grad)" />
-        </Svg>
+        </Svg> */}
 
         {/* Components on top */}
         <VStack space="lg" className="flex-1">
@@ -121,92 +124,106 @@ export default function FullScreenRadialGradientWithContent() {
               </HStack>
             </HStack>
           </LinearGradient>
-          <VStack className="justify-between flex-1 p-2 pb-32">
+          <VStack className="justify-between flex-1 p-2 pb-16">
             <HStack className="justify-between">
               <VStack space="4xl" className="mt-5">
-                <Pressable onPress={() => {}}>
-                  <Box className="bg-red-500 size-12 items-center justify-center rounded-md">
-                    <Entypo name="chevron-with-circle-down" size={24} color="white" />
-                  </Box>
-                </Pressable>
-                <Pressable onPress={() => {}}>
-                  <Box className="bg-red-500 size-12 items-center justify-center rounded-md">
-                    <Entypo name="chevron-with-circle-down" size={24} color="white" />
-                  </Box>
-                </Pressable>
-                <Pressable onPress={() => {}}>
-                  <Box className="bg-red-500 size-12 items-center justify-center rounded-md">
-                    <Entypo name="chevron-with-circle-down" size={24} color="white" />
-                  </Box>
-                </Pressable>
+                <ButtonIcon />
+                <ButtonIcon />
+                <ButtonIcon />
               </VStack>
-              <Image source={logo} style={{ width: 200, height: 200 }} />
+              <Image source={logo} style={{ width: 200, height: 200,objectFit:"contain" }} />
               <VStack space="4xl" className="mt-5">
-                <Pressable onPress={() => {}}>
-                  <Box className="bg-red-500 size-12 items-center justify-center rounded-md">
-                    <Entypo name="chevron-with-circle-down" size={24} color="white" />
-                  </Box>
-                </Pressable>
-                <Pressable onPress={() => {}}>
-                  <Box className="bg-red-500 size-12 items-center justify-center rounded-md">
-                    <Entypo name="chevron-with-circle-down" size={24} color="white" />
-                  </Box>
-                </Pressable>
-                <Pressable onPress={() => {}}>
-                  <Box className="bg-red-500 size-12 items-center justify-center rounded-md">
-                    <Entypo name="chevron-with-circle-down" size={24} color="white" />
-                  </Box>
-                </Pressable>
+                <ButtonIcon />
+                <ButtonIcon />
+                <ButtonIcon />
               </VStack>
             </HStack>
-            <HStack space="xl" className="flex ">
-              {/* <View
-              style={{
-                padding: 5,
-                paddingTop: 0,
-                borderRadius: 8,
-                backgroundColor: '#0d6b1e',
-                shadowColor: '#000',
-                shadowOpacity: 0.5,
-                shadowRadius: 8,
-                shadowOffset: { width: 0, height: 4 },
-              }}
-            >
-              <LinearGradient
-                colors={['#4CFF4C', '#00C851', '#009432']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 0, y: 1 }}
+            <VStack space="md" className="flex items-center">
+              <View
                 style={{
-                  paddingVertical: 14,
-                  paddingHorizontal: 35,
+                  padding: 5,
+                  paddingTop: 0,
                   borderRadius: 8,
-                  borderWidth: 1,
-                  borderColor: '#c8ffc8',
-                  justifyContent: 'center',
-                  alignItems: 'center',
+                  backgroundColor: '#0d6b1e',
+                  shadowColor: '#000',
+                  shadowOpacity: 0.5,
+                  shadowRadius: 8,
+                  shadowOffset: { width: 0, height: 4 },
+                  width: '80%',
                 }}
               >
-                <Text
+                <LinearGradient
+                  colors={['#4CFF4C', '#00C851', '#009432']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
                   style={{
-                    color: 'white',
-                    fontWeight: '700',
-                    fontSize: 18,
-                    textShadowColor: 'rgba(0,0,0,0.4)',
-                    textShadowOffset: { width: 1, height: 2 },
-                    textShadowRadius: 3,
+                    paddingVertical: 30,
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    borderColor: '#c8ffc8',
+                    justifyContent: 'center',
+                    alignItems: 'center',
                   }}
                 >
-                  Start a game
-                </Text>
-              </LinearGradient>
-            </View> */}
+                  <Text
+                    style={{
+                      color: 'white',
+                      fontWeight: '700',
+                      fontSize: 18,
+                      textShadowColor: 'rgba(0,0,0,0.4)',
+                      textShadowOffset: { width: 1, height: 2 },
+                      textShadowRadius: 3,
+                    }}
+                  >
+                    Start a game
+                  </Text>
+                </LinearGradient>
+              </View>
+              <View
+                style={{
+                  padding: 5,
+                  paddingTop: 0,
+                  borderRadius: 8,
+                  backgroundColor: '#b57902',
+                  shadowColor: '#000',
+                  shadowOpacity: 0.5,
+                  shadowRadius: 8,
+                  shadowOffset: { width: 0, height: 4 },
+                  width: '80%',
+                }}
+              >
+                <LinearGradient
+                  colors={['#FFD700', '#FFB200', '#E69A00']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                  style={{
+                    paddingVertical: 30,
+                    borderRadius: 8,
+                    borderWidth: 1,
+                    borderColor: '#c8ffc8',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  <Text
+                    style={{
+                      color: 'white',
+                      fontWeight: '700',
+                      fontSize: 18,
+                      textShadowColor: 'rgba(0,0,0,0.4)',
+                      textShadowOffset: { width: 1, height: 2 },
+                      textShadowRadius: 3,
+                    }}
+                  >
+                    Join a game
+                  </Text>
+                </LinearGradient>
+              </View>
 
-              <JoinButton color="green" />
-              <JoinButton color="yellow" />
               <Pressable onPress={() => router.push('/(app)/terms')}>
                 <Text>Terms and conditions</Text>
               </Pressable>
-            </HStack>
+            </VStack>
           </VStack>
         </VStack>
       </View>
@@ -243,7 +260,7 @@ export default function FullScreenRadialGradientWithContent() {
                 rules={{ required: 'Name is required' }} // 👈 Validation rule
                 render={({ field: { onChange, onBlur, value } }) => (
                   <FormControl isInvalid={isInvalid('full_name')} className="mb-4">
-                    <Text >Full Name</Text>
+                    <Text>Full Name</Text>
                     <Input className="h-12">
                       <InputSlot className="pl-3">
                         <Feather name="user" size={16} color="white" />
@@ -265,7 +282,7 @@ export default function FullScreenRadialGradientWithContent() {
                 rules={{ required: 'Phone number is required' }} // 👈 Validation rule
                 render={({ field: { onChange, onBlur, value } }) => (
                   <FormControl isInvalid={isInvalid('phone')} className="mb-4">
-                    <Text >Phone</Text>
+                    <Text>Phone</Text>
                     <Input className="h-12">
                       <InputSlot className="pl-3">
                         <Feather name="phone-call" size={16} color="white" />
@@ -317,6 +334,46 @@ export default function FullScreenRadialGradientWithContent() {
         </ModalContent>
       </Modal>
     </>
+  );
+}
+
+function ButtonIcon() {
+  return (
+    <Pressable onPress={() => router.push('/(app)/active')} onPressIn={() => {}} onPressOut={() => {}} className="flex-1">
+      <Animated.View
+        style={{
+          padding: 5,
+          paddingTop: 0,
+          paddingLeft: 0,
+          paddingRight: 0,
+          borderRadius: 8,
+          backgroundColor: '#182970',
+          shadowColor: '#000',
+          shadowOpacity: 0.5,
+          shadowRadius: 8,
+          shadowOffset: { width: 0, height: 4 },
+          width: 50,
+          height: 50,
+          aspectRatio: 1,
+        }}
+      >
+        <LinearGradient
+          colors={['#004fde', '#1d3285']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={{
+            borderRadius: 8,
+            borderWidth: 1,
+            borderColor: '#4d5780',
+            justifyContent: 'center',
+            alignItems: 'center',
+            flex: 1,
+          }}
+        >
+          {/* <Entypo name="chevron-with-circle-down" size={24} color="white" /> */}
+        </LinearGradient>
+      </Animated.View>
+    </Pressable>
   );
 }
 

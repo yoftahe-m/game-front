@@ -43,6 +43,16 @@ export const userApi = createApi({
         };
       },
     }),
+    changeProfile: builder.mutation({
+      query: (data) => {
+        return {
+          url: `user/changeProfile`,
+          method: "POST",
+          body: data,
+          formData: true,
+        };
+      },
+    }),
   }),
 });
 

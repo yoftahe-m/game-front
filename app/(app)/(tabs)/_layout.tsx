@@ -1,5 +1,8 @@
 import { Tabs } from 'expo-router';
 import { AntDesign, Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import Home from '@/assets/icons/Home';
+import Game from '@/assets/icons/Game';
+import Trophy from '@/assets/icons/Trophy';
 
 export default function TabLayout() {
   return (
@@ -16,21 +19,6 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
-        options={{
-          title: 'Home',
-          tabBarIcon: ({ color }) => <AntDesign name="home" size={24} color={color} />,
-          headerShown: false,
-        }}
-      />
-      <Tabs.Screen
-        name="games"
-        options={{
-          title: 'Games',
-          tabBarIcon: ({ color }) => <Ionicons name="game-controller-outline" size={24} color={color} />,
-        }}
-      />
-      <Tabs.Screen
         name="leaderboard"
         options={{
           title: 'Leaderboard',
@@ -38,10 +26,19 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="settings"
+        name="index"
         options={{
-          title: 'Settings',
-          tabBarIcon: ({ color }) => <Ionicons name="settings-outline" size={24} color={color} />,
+          title: 'Home',
+          tabBarIcon: ({ color }) => <AntDesign name="home" size={24} color={color} />,
+          headerShown: false,
+        }}
+      />
+
+      <Tabs.Screen
+        name="games"
+        options={{
+          title: 'Games',
+          tabBarIcon: ({ color }) => <Ionicons name="game-controller-outline" size={24} color={color} />,
         }}
       />
     </Tabs>
@@ -52,6 +49,7 @@ import { View, Animated } from 'react-native';
 import { useLinkBuilder, useTheme } from '@react-navigation/native';
 import { Text, PlatformPressable } from '@react-navigation/elements';
 import { useEffect, useRef } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
 
 function MyTabBar({ state, descriptors, navigation }) {
   const { colors } = useTheme();
@@ -100,7 +98,7 @@ function MyTabBar({ state, descriptors, navigation }) {
         });
         const radius = animValues[index].interpolate({
           inputRange: [0, 1],
-          outputRange: [0, 8],
+          outputRange: [0, 10],
         });
 
         return (
@@ -112,20 +110,34 @@ function MyTabBar({ state, descriptors, navigation }) {
             onPress={onPress}
             onLongPress={onLongPress}
             key={index}
-            style={{ flex: 1 }}
+            style={{ flex: 1}}
           >
-            <Animated.View
-              style={{
-                height,
-                borderTopLeftRadius: radius,
-                borderTopRightRadius: radius,
-                backgroundColor: isFocused ? '#22c55e' : '#0c2665',
-                justifyContent: 'center',
-                alignItems: 'center',
-              }}
+            <LinearGradient
+              colors={isFocused ? ['#004fde', '#1d3285'] : ['#1d3285', '#0e1f4d']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 0, y: 1 }}
+              style={{ borderTopLeftRadius: isFocused ? 10 : 0, borderTopRightRadius: isFocused ? 10 : 0 }}
             >
-              <Text style={{ color: isFocused ? colors.primary : colors.text }}>{label}</Text>
-            </Animated.View>
+              <Animated.View
+                style={{
+                  height,
+                  borderTopLeftRadius: radius,
+                  borderTopRightRadius: radius,
+                  // backgroundColor: isFocused ? '#1d3285' : '#0e1f4d',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderWidth: 1,
+                  borderBottomWidth: 0,
+                  borderColor: isFocused ? '#113da6' : '#081939',
+                  borderTopColor: '#113da6',
+                }}
+              >
+                {/* <Text style={{ color: 'white' }}>{label}</Text> */}
+                {label === 'Home' && <Home width={isFocused ? 60 : 40} height={isFocused ? 60 : 40} />}
+                {label === 'Games' && <Game width={isFocused ? 60 : 40} height={isFocused ? 60 : 40} />}
+                {label === 'Leaderboard' && <Trophy width={isFocused ? 60 : 40} height={isFocused ? 60 : 40} />}
+              </Animated.View>
+            </LinearGradient>
           </PlatformPressable>
         );
       })}

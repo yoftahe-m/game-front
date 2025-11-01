@@ -17,7 +17,7 @@ export default function LeaderboardScreen() {
 
   const { data, isSuccess, isFetching, error } = useGetLeaderboardQuery({
     page: currentPage,
-    size: 5,
+    size: 20,
   });
 
   useEffect(() => {
@@ -40,64 +40,60 @@ export default function LeaderboardScreen() {
     <SafeAreaView style={{ flex: 1 }}>
       <VStack space="lg" className="flex-1 m-2">
         <Center className="">
-          <HStack className="items-end">
+          <HStack className="items-end" space="sm">
             <VStack>
-              <Box className="w-20 h-28 bg-slate-400 flex items-center justify-center rounded-tl-lg rounded-bl-lg">
-                <Text>2</Text>
-              </Box>
+              <Avatar size="xl">
+                <AvatarFallbackText>{leaders.length > 2 ? leaders[1].full_name.slice(0, 5) : ''}</AvatarFallbackText>
+                <AvatarImage source={{ uri: leaders.length > 2 ? leaders[1].picture : '' }} alt="profile" />
+              </Avatar>
               <Text className="text-center">{leaders.length > 2 ? leaders[1].full_name.slice(0, 5) : ''}</Text>
             </VStack>
-            <VStack className="items-center">
+            <VStack className="items-center mb-10">
               <MaterialCommunityIcons name="crown-outline" size={24} color={'#fbbf24'} />
-              <Box className="w-20 h-36 bg-amber-400 flex items-center justify-center rounded-t-lg">
-                <Text>1</Text>
-              </Box>
+
+              <Avatar size="2xl">
+                <AvatarFallbackText>{leaders.length > 2 ? leaders[0].full_name.slice(0, 5) : ''}</AvatarFallbackText>
+                <AvatarImage source={{ uri: leaders.length > 2 ? leaders[0].picture : '' }} alt="profile" />
+              </Avatar>
               <Text className="text-center">{leaders.length > 2 ? leaders[0].full_name.slice(0, 5) : ''}</Text>
             </VStack>
             <VStack>
-              <Box className="w-20 h-20 bg-orange-800 flex items-center justify-center rounded-tr-lg rounded-br-lg">
-                <Text>3</Text>
-              </Box>
+              <Avatar size="xl">
+                <AvatarFallbackText>{leaders.length > 2 ? leaders[2].full_name.slice(0, 5) : ''}</AvatarFallbackText>
+                <AvatarImage source={{ uri: leaders.length > 2 ? leaders[2].picture : '' }} alt="profile" />
+              </Avatar>
               <Text className="text-center">{leaders.length > 2 ? leaders[2].full_name.slice(0, 5) : ''}</Text>
             </VStack>
           </HStack>
         </Center>
-        <VStack className=" my-2 flex-1 border-[3px] border-amber-600 rounded-3xl bg-amber-400">
-          <HStack className="justify-between items-center p-4 ">
-            <Text size="xl" bold>
+        <VStack className=" flex-1 items-center">
+          <Box className=" rounded-3xl w-full flex-1 p-4 shadow-md" style={{ backgroundColor: '#1d3285' }}>
+            <Text size="2xl" bold className="text-center mb-4">
               Leaderboard
             </Text>
-          </HStack>
-          <Box className="flex-1 bg-amber-200 border-2 border-amber-500 m-2 mt-0  rounded-2xl overflow-hidden">
+
             <FlatList
               data={leaders}
-              renderItem={({ index, item }) => {
-                return (
-                  <HStack space="md" className="items-center justify-between px-2">
-                    <HStack space="md" className="items-center">
-                      <Text size="lg" bold>
-                        {index + 1}
-                      </Text>
-                      <Avatar size="md">
-                        <AvatarFallbackText>{item.full_name}</AvatarFallbackText>
-                        <AvatarImage
-                          source={{
-                            uri: item.picture,
-                          }}
-                          alt="profile"
-                        />
-                      </Avatar>
-                      <Text size="lg" bold>
-                        {item.full_name}
-                      </Text>
-                    </HStack>
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={({ index, item }) => (
+                <HStack className="justify-between items-center px-4 py-2 rounded-xl mb-2" space="md" style={{ backgroundColor: '#456bb0' }}>
+                  <HStack space="md" className="items-center">
                     <Text size="lg" bold>
-                      {item.amount}
+                      {index + 1}
+                    </Text>
+                    <Avatar size="md">
+                      <AvatarFallbackText>{item.full_name}</AvatarFallbackText>
+                      <AvatarImage source={{ uri: item.picture }} alt="profile" />
+                    </Avatar>
+                    <Text size="lg" bold>
+                      {item.full_name}
                     </Text>
                   </HStack>
-                );
-              }}
-              contentContainerStyle={{ gap: 10, padding: 8 }}
+                  <Text size="lg" bold>
+                    {item.amount}
+                  </Text>
+                </HStack>
+              )}
               onEndReached={loadMore}
               onEndReachedThreshold={0.4}
               ListFooterComponent={isFetching ? <ActivityIndicator size="small" color="#000" style={{ marginVertical: 10 }} /> : null}
