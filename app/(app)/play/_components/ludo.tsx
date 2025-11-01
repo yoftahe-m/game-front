@@ -13,6 +13,7 @@ import { Box } from '@/components/ui/box';
 import { LinearGradient } from 'expo-linear-gradient';
 import { View } from 'react-native';
 import { BOARD } from '@/constants/ludo';
+import Svg, { Polygon } from 'react-native-svg';
 
 const Ludo = () => {
   const socket = getSocket();
@@ -39,19 +40,19 @@ const Ludo = () => {
   const getColor = (color: 'red' | 'green' | 'blue' | 'yellow' | 'white', shade: 200 | 500): string => {
     const colors: Record<'red' | 'green' | 'blue' | 'yellow' | 'white', { 200: string; 500: string }> = {
       red: {
-        200: '#FF2400', // Light red
+        200: '#EA4335', // Light red
         500: '#f56565', // Base red
       },
       green: {
-        200: '#00C853', // Light green
+        200: '#34A853', // Light green
         500: '#48bb78', // Base green
       },
       blue: {
-        200: '#0F52BA', // Light blue
+        200: '#4285F4', // Light blue
         500: '#4299e1', // Base blue
       },
       yellow: {
-        200: '#FFF700', // Light yellow
+        200: '#FFC107', // Light yellow
         500: '#ecc94b', // Base yellow
       },
       white: {
@@ -70,7 +71,7 @@ const Ludo = () => {
           color={'#FF2400'}
           name={playingGame.players[0].username}
           userId={playingGame.players[0].userId}
-          turn={playingGame.turn}
+          turn={playingGame.options.turn}
           gameId={playingGame.id}
           roll={playingGame.options.roll}
         />
@@ -126,7 +127,9 @@ const Ludo = () => {
             <Box style={{ width: '20%' }} />
             <ColorPanel color="blue" />
           </Box>
-          <Box style={{ height: '20%' }} />
+          <Box style={{ height: '20%' }} className="flex flex-row justify-center">
+            <CenterPanel />
+          </Box>
           <Box className="w-full h-[40%]   flex flex-row">
             <ColorPanel color="green" />
             <Box style={{ width: '20%' }} />
@@ -141,7 +144,7 @@ const Ludo = () => {
           inverse={true}
           name={playingGame.players[playingGame.players.length === 2 ? 1 : 3].username}
           userId={playingGame.players[playingGame.players.length === 2 ? 1 : 3].id}
-          turn={playingGame.turn}
+          turn={playingGame.options.turn}
           gameId={playingGame.id}
           roll={playingGame.options.roll}
         />
@@ -204,6 +207,7 @@ function Player({
         break;
     }
   }
+  console.log(user?.id, turn, userId);
   return (
     <VStack space="sm">
       <HStack space="md" className={inverse ? 'flex-row-reverse' : ''} style={{ alignItems: 'center' }}>
@@ -215,11 +219,10 @@ function Player({
             <FontAwesome5 name={dice(roll)} size={24} color="white" />
           </Box>
         </Pressable>
-        {userId === turn && <FontAwesome name={inverse ? 'arrow-right' : 'arrow-left'} size={24} color="black" />}
+        {user?.id === turn && <FontAwesome name={inverse ? 'arrow-right' : 'arrow-left'} size={24} color="black" />}
       </HStack>
       <Text className={inverse ? 'text-right ' : ''} bold>
         {name}
-        {user?.fullName}
       </Text>
     </VStack>
   );
@@ -261,3 +264,31 @@ export const ColorPanel = ({ color }: { color: ColorType }) => {
     </LinearGradient>
   );
 };
+
+function CenterPanel() {
+  return (
+    <View
+      style={{
+        width: '20%',
+        height: '100%',
+        borderRadius: 10,
+        shadowColor: '#000',
+        shadowOpacity: 0.3,
+        shadowRadius: 12,
+        shadowOffset: { width: 0, height: 6 },
+        overflow: 'hidden',
+      }}
+    >
+      <Svg width="100%" height="100%" viewBox="0 0 100 100">
+        {/* Top Triangle (Blue) */}
+        <Polygon points="0,0 100,0 50,50" fill="#4285F4" />
+        {/* Right Triangle (Yellow) */}
+        <Polygon points="100,0 100,100 50,50" fill="#FFC107" />
+        {/* Bottom Triangle (Green) */}
+        <Polygon points="0,100 100,100 50,50" fill="#34A853" />
+        {/* Left Triangle (Red) */}
+        <Polygon points="0,0 0,100 50,50" fill="#EA4335" />
+      </Svg>
+    </View>
+  );
+}
