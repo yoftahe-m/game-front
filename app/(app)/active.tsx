@@ -143,6 +143,80 @@ export default function TabOneScreen() {
           </HStack>
         </HStack>
 
+        <VStack className=" flex-1 items-center p-2">
+          <Box className=" rounded-3xl w-full flex-1 p-4 shadow-md" style={{ backgroundColor: '#1d3285' }}>
+            <HStack className="justify-between items-center py-4 px-2F">
+              <Text size="xl" bold>
+                Active Games
+              </Text>
+
+              <Input
+                variant="outline"
+                size="md"
+                isDisabled={false}
+                isInvalid={false}
+                isReadOnly={false}
+                className="h-8 w-40 rounded-full bg-[#456bb0]"
+              >
+                <InputField placeholder="Search" />
+              </Input>
+            </HStack>
+
+            <FlatList
+              keyExtractor={(item, index) => index.toString()}
+              data={activeGames.filter((g) => g.players.length < g.maxPlayers)}
+              renderItem={({ item }) => {
+                const game = games.find((g) => g.title === item.type);
+                return (
+                  <HStack
+                    className="flex flex-row justify-between items-center p-4 rounded-lg mb-2"
+                    space="md"
+                    style={{ backgroundColor: '#456bb0' }}
+                  >
+                    <HStack space="md">
+                      <Image source={{ uri: game?.image }} alt={'game Image'} width={100} height={100} className="rounded-lg" />
+
+                      <VStack>
+                        <Text size="xl" bold>
+                          {game?.title}
+                        </Text>
+                        <Text size="lg" bold>
+                          Stake: {item.amount}
+                        </Text>
+                        <Text size="lg" bold>
+                          players: {item.players.length}/{item.maxPlayers}
+                        </Text>
+                      </VStack>
+                    </HStack>
+                    <Button
+                      className="bg-green-600 focus:bg-green-500 hover:bg-red-500"
+                      onPress={() => {
+                        if (user!.coins < Number(item.amount)) {
+                          setDepositModal(true);
+                        } else {
+                          setSelectedGameId(item.id);
+                        }
+                      }}
+                    >
+                      <ButtonText>Join</ButtonText>
+                    </Button>
+                    {/* <Text>{item.type}</Text> */}
+                    {/* <Text className="flex-1">{item.game ? item.game : item.type}</Text>
+                    <Text>
+                      {(item.type === 'Won' || item.type === 'Deposit') && '+'}
+                      {(item.type === 'Lost' || item.type === 'Withdraw') && '-'}
+                      {Math.abs(item.amount)}
+                    </Text>
+                    <Text className="flex-1  text-right">{new Date(item.created_at).toLocaleDateString()}</Text> */}
+                  </HStack>
+                );
+              }}
+            />
+          </Box>
+        </VStack>
+        {/* 
+
+
         <VStack className="m-2 mt-4 mb-0 flex-1 border-[3px] border-amber-600 rounded-3xl bg-amber-400">
           <HStack className="justify-between items-center p-4 px-8">
             <Text size="xl" bold>
@@ -167,10 +241,7 @@ export default function TabOneScreen() {
               contentContainerStyle={{ gap: 10, padding: 8 }}
             />
           </View>
-        </VStack>
-        <Box className="p-2 px-6">
-          <Text bold>helljkshfkjs hdlhsdlv sdkvhskdvhsd sdjvhsjhdv shdjvghsjdvo</Text>
-        </Box>
+        </VStack> */}
       </VStack>
       <Modal
         isOpen={!!selectedGame}

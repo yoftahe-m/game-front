@@ -6,13 +6,13 @@ let socket: Socket | null = null;
 export const connectSocket = (token: string): Socket => {
   if (socket) return socket; // reuse existing
 
-  socket = io('http://192.168.43.140:8100', {
+  socket = io('http://192.168.142.60:8100', {
     transports: ['websocket'],
     auth: { token },
   });
 
   socket.on('connect', () => console.log('✅ Connected:', socket?.id));
-  socket.on('connect_error', (err) => console.error('❌ Socket error:', err.message));
+  socket.on('connect_error', (err) => console.error('❌ Socket error:', err));
 
   return socket;
 };

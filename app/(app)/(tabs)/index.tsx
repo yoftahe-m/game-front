@@ -138,7 +138,7 @@ export default function FullScreenRadialGradientWithContent() {
                 <ButtonIcon />
               </VStack>
             </HStack>
-            <VStack space="md" className="flex items-center">
+            <VStack space="md" className="flex items-center w-[80%] mx-auto">
               <View
                 style={{
                   padding: 5,
@@ -179,6 +179,8 @@ export default function FullScreenRadialGradientWithContent() {
                   </Text>
                 </LinearGradient>
               </View>
+              <Pressable onPress={()=>router.push("/(app)/active")} className='w-full'>
+
               <View
                 style={{
                   padding: 5,
@@ -189,7 +191,7 @@ export default function FullScreenRadialGradientWithContent() {
                   shadowOpacity: 0.5,
                   shadowRadius: 8,
                   shadowOffset: { width: 0, height: 4 },
-                  width: '80%',
+                  width:"100%"
                 }}
               >
                 <LinearGradient
@@ -219,6 +221,7 @@ export default function FullScreenRadialGradientWithContent() {
                   </Text>
                 </LinearGradient>
               </View>
+              </Pressable>
 
               <Pressable onPress={() => router.push('/(app)/terms')}>
                 <Text>Terms and conditions</Text>

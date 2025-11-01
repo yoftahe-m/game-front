@@ -5,10 +5,10 @@ import { useLocalSearchParams } from 'expo-router';
 import { RootState } from '@/store';
 import { getSocket } from '@/socket';
 import { Text } from '@/components/ui/text';
-import { Grid, GridItem } from '@/components/ui/grid';
-import { Pressable } from '@/components/ui/pressable';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
+import { Grid, GridItem } from '@/components/ui/grid';
+import { Pressable } from '@/components/ui/pressable';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 
 const TicTacToe = () => {

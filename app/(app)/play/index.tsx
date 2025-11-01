@@ -13,6 +13,7 @@ import { setCoins } from '@/store/slice/user';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
 import TicTacToe from './_components/tic-tac-toe';
+import Ludo from './_components/ludo';
 import { Pressable } from '@/components/ui/pressable';
 import { Modal, ModalBackdrop, ModalBody, ModalContent, ModalFooter, ModalHeader } from '@/components/ui/modal';
 
@@ -75,6 +76,9 @@ const PlayScreen = () => {
     switch (type) {
       case 'Tic Tac Toe':
         return <TicTacToe />;
+        break;
+      case 'Ludo':
+        return <Ludo />;
         break;
 
       default:

@@ -9,7 +9,7 @@ import { Center } from '@/components/ui/center';
 import { HStack } from '@/components/ui/hstack';
 
 import React, { useContext, useEffect, useState } from 'react';
-import { View, Pressable, Animated, Easing, Dimensions ,StyleSheet} from 'react-native';
+import { View, Pressable, Animated, Easing, Dimensions, StyleSheet } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Dice1, Dice2, Dice3, Dice4, Dice5, Dice6 } from 'lucide-react-native';
 import { LUDO_BOARD } from './_constants/board';
@@ -69,9 +69,6 @@ export default function LudoScreen() {
     console.log('moving', pinHome);
     socket.emit('ludo:movePin', { userId: user!.id, gameId: playingGame.id, pinHome });
   };
-
-
-
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -140,13 +137,13 @@ export default function LudoScreen() {
               <Box className="w-full h-[40%]   flex flex-row">
                 <ColorPanel color="red" />
                 <Box style={{ width: '20%' }} />
-       <ColorPanel color="blue" />
+                <ColorPanel color="blue" />
               </Box>
               <Box style={{ height: '20%' }} />
               <Box className="w-full h-[40%]   flex flex-row">
                 <ColorPanel color="green" />
                 <Box style={{ width: '20%' }} />
-                 <ColorPanel color="yellow" />
+                <ColorPanel color="yellow" />
               </Box>
             </VStack>
           </Box>
@@ -267,8 +264,8 @@ export const ColorPanel = ({ color }: { color: ColorType }) => {
 
 const styles = StyleSheet.create({
   panel: {
-    width: "40%",
-    height: "100%",
+    width: '40%',
+    height: '100%',
     borderRadius: 10,
     borderWidth: 2,
     justifyContent: 'center',
