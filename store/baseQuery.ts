@@ -1,6 +1,7 @@
 import type { FetchArgs, BaseQueryFn, FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 
+import { getSocket } from '@/socket';
 import type { RootState } from './index';
 import { setCredentials, logout } from './slice/user';
 
@@ -36,7 +37,8 @@ const baseQueryWithReAuth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
             refreshToken: data.refreshToken,
           })
         );
-
+        const socket = getSocket();
+        if (socket) socket.emit('refresh_token', data.accessToken);
         result = await baseQuery(args, api, extraOptions);
       } else {
         api.dispatch(logout());
