@@ -41,12 +41,14 @@ export default function LoadingScreen() {
       socket.emit('joinGame', {
         userId: user!.id,
         username: user!.fullName,
+        picture: user?.profilePic,
         gameId,
       });
     } else {
       socket.emit('createGame', {
         userId: user!.id,
         username: user!.fullName,
+        picture: user!.profilePic,
         type,
         options: {},
         amount,
@@ -76,8 +78,6 @@ export default function LoadingScreen() {
     };
   }, []);
 
-
-
   return (
     <SafeAreaView style={{ flex: 1, paddingHorizontal: 8 }}>
       <VStack space="md">
@@ -102,11 +102,10 @@ export default function LoadingScreen() {
                   <AvatarFallbackText>{item.username}</AvatarFallbackText>
                   <AvatarImage
                     source={{
-                      uri: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80',
+                      uri: item.username,
                     }}
                     alt="prof"
                   />
-                  <AvatarBadge />
                 </Avatar>
                 <Text size="lg" bold>
                   {item.username}

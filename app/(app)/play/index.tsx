@@ -16,6 +16,13 @@ import TicTacToe from './_components/tic-tac-toe';
 import Ludo from './_components/ludo';
 import { Pressable } from '@/components/ui/pressable';
 import { Modal, ModalBackdrop, ModalBody, ModalContent, ModalFooter, ModalHeader } from '@/components/ui/modal';
+import Star from '@/assets/icons/Star';
+import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
+import Money from '@/assets/icons/Money';
+import { View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import Back from '@/assets/icons/Back';
+import Draw from '@/assets/icons/draw';
 
 const PlayScreen = () => {
   const socket = getSocket();
@@ -23,12 +30,13 @@ const PlayScreen = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const [forfeitModal, setForfeitModal] = useState(false);
-  const [gameModal, setGameModal] = useState(true);
+  const [gameModal, setGameModal] = useState(false);
   const { game } = useLocalSearchParams<{ game: string }>();
   const [pendingAction, setPendingAction] = useState<any>(null);
   const user = useSelector((state: RootState) => state.user.data);
 
-  const parseGame = JSON.parse(game);
+  const [parseGame, setParseGame] = useState(JSON.parse(game));
+  // const parseGame = JSON.parse(game);
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (e) => {
@@ -37,10 +45,12 @@ const PlayScreen = () => {
         return;
       }
 
+      if (!parseGame.winner) {
+        e.preventDefault();
+        setPendingAction(e.data.action);
+        setForfeitModal(true);
+      }
       // Block goBack or pop actions only
-      e.preventDefault();
-      setPendingAction(e.data.action);
-      setForfeitModal(true);
     });
 
     return unsubscribe;
@@ -57,15 +67,19 @@ const PlayScreen = () => {
   useEffect(() => {
     if (!socket) return;
     socket.on('gameOver', (game) => {
-      if (game.winner === user?.id) {
-        dispatch(setCoins({ amount: Number(game.amount) }));
-        router.replace({ pathname: '/(app)/won', params: { game: JSON.stringify(game) } });
-      } else if (game.winner === 'draw') {
-        router.replace({ pathname: '/(app)/draw', params: { game: JSON.stringify(game) } });
-      } else {
-        dispatch(setCoins({ amount: Number(-game.amount) }));
-        router.replace({ pathname: '/(app)/lost', params: { game: JSON.stringify(game) } });
-      }
+      console.log('game ended');
+      setParseGame(game);
+
+      setGameModal(true);
+      // if (game.winner === user?.id) {
+      //   dispatch(setCoins({ amount: Number(game.amount) }));
+      //   router.replace({ pathname: '/(app)/won', params: { game: JSON.stringify(game) } });
+      // } else if (game.winner === 'draw') {
+      //   router.replace({ pathname: '/(app)/draw', params: { game: JSON.stringify(game) } });
+      // } else {
+      //   dispatch(setCoins({ amount: Number(-game.amount) }));
+      //   router.replace({ pathname: '/(app)/lost', params: { game: JSON.stringify(game) } });
+      // }
     });
 
     return () => {
@@ -145,23 +159,97 @@ const PlayScreen = () => {
         }}
         size="lg"
       >
-        <ModalBackdrop />
+        <ModalBackdrop onPress={() => router.back()} />
         <ModalContent className="bg-[#132e61] border-0 rounded-2xl">
-          <ModalHeader>
-            <Text size="lg" bold>
-              {parseGame.winner === user?.id && 'You Won'}
-              {parseGame.winner === 'draw' && 'Its a Draw'}
-              {parseGame.winner !== 'draw' && parseGame.winner !== user?.id && 'You Lost'}
-            </Text>
-          </ModalHeader>
           <ModalBody>
-            
+            {parseGame.winner && (
+              <VStack className="items-center" space="md">
+                {parseGame.winner === 'draw' ? (
+                  <>
+                    <Box className=" flex items-center justify-center" style={{ height: 150 }}>
+                      <Draw />
+                    </Box>
+                    <Text size="2xl" bold>
+                      It's a draw
+                    </Text>
+                  </>
+                ) : (
+                  <>
+                    <Box className=" flex items-center justify-center" style={{ height: 90 }}>
+                      <Star />
+                    </Box>
+
+                    <Avatar size="2xl" className="border border-white rounded-lg overflow-hidden">
+                      <AvatarFallbackText>{parseGame.players.find((p) => p.userId === parseGame.winner).username}</AvatarFallbackText>
+                      <AvatarImage
+                        source={{
+                          uri: parseGame.players.find((p) => p.userId === parseGame.winner).picture,
+                        }}
+                        className="rounded-none "
+                      />
+                    </Avatar>
+                    <Text size="2xl" bold>
+                      {parseGame.players.find((p) => p.userId === parseGame.winner).username} Won
+                    </Text>
+                    <HStack space="md" className="items-center">
+                      <Text size="lg" bold>
+                        {parseGame.amount * parseGame.players.length}
+                      </Text>
+                      <Money />
+                    </HStack>
+                  </>
+                )}
+              </VStack>
+            )}
           </ModalBody>
           <ModalFooter>
-            <Pressable onPress={() => {}} className='w-full'>
-              <HStack space="sm" className="bg-[#0e1f4d] py-2 px-4 rounded-lg w-full justify-center">
-                <Text>Go Back</Text>
-              </HStack>
+            <Pressable onPress={() => router.back()} className="w-full">
+              <View
+                style={{
+                  paddingBottom: 5,
+                  paddingTop: 0,
+
+                  borderRadius: 50,
+                  backgroundColor: '#c47b12',
+                  shadowColor: '#000',
+                  shadowOpacity: 0.5,
+                  shadowRadius: 8,
+                  shadowOffset: { width: 0, height: 4 },
+                  width: '100%',
+                }}
+              >
+                <LinearGradient
+                  colors={['#EDDE5D', '#F09819']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 0, y: 1 }}
+                  style={{
+                    height: 50,
+                    // paddingVertical: 30,
+                    borderRadius: 50,
+                    borderWidth: 1,
+                    borderColor: '#c8ffc8',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  <HStack space="md">
+                    <Back />
+                    <Text
+                      size="2xl"
+                      style={{
+                        color: 'white',
+                        fontWeight: '700',
+
+                        textShadowColor: 'rgba(0,0,0,0.4)',
+                        textShadowOffset: { width: 1, height: 2 },
+                        textShadowRadius: 3,
+                      }}
+                    >
+                      Go Back
+                    </Text>
+                  </HStack>
+                </LinearGradient>
+              </View>
             </Pressable>
           </ModalFooter>
         </ModalContent>
