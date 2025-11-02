@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useRef, useState } from 'react';
-import { Dimensions, View, StyleSheet, Image } from 'react-native';
+import { Dimensions, View, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import Svg, { Defs, RadialGradient, Stop, Rect } from 'react-native-svg';
 import logo from '@/assets/images/logo.png';
 import { VStack } from '@/components/ui/vstack';
@@ -13,24 +13,28 @@ import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { RootState } from '@/store';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const { width, height } = Dimensions.get('window');
+import Toast from 'react-native-root-toast';
 
 import { Modal, ModalBackdrop, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter } from '@/components/ui/modal';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Heading } from '@/components/ui/heading';
 import { Icon, CloseIcon } from '@/components/ui/icon';
-
+import * as ImagePicker from 'expo-image-picker';
 type FormData = {
   full_name: string;
   phone: string;
 };
 
 export default function FullScreenRadialGradientWithContent() {
+  const dispatch = useDispatch();
   const [showModal, setShowModal] = useState(false);
+  const [image, setImage] = useState('');
   const user = useSelector((state: RootState) => state.user.data);
   const insets = useSafeAreaInsets();
+  const [changeProfile, { isLoading }] = useChangeProfileMutation();
   const {
     control,
     handleSubmit,
@@ -45,14 +49,19 @@ export default function FullScreenRadialGradientWithContent() {
   });
 
   const onUpdate = async (data: FormData) => {
-    console.log('Sign Up Data:', data);
+    const formData = new FormData();
+
+    const filename = image.split('/').pop() || 'image.jpg';
+    formData.append('image', {
+      uri: image,
+      name: filename,
+      type: `image/${image.split('.').pop()}`,
+    } as any);
+    formData.append('fullName', data.full_name);
+    formData.append('phone', data.phone);
     try {
-      // const result = await signup({
-      //   data,
-      // }).unwrap();
-      // console.log('result', result);
-      // dispatch(signin(result));
-      // router.replace('/(app)/(tabs)');
+      const result = await changeProfile(formData).unwrap();
+      dispatch(setUser(result));
     } catch (error) {
       console.log('error', error);
     }
@@ -61,6 +70,36 @@ export default function FullScreenRadialGradientWithContent() {
   // Helper function to check if a field has an error
   const isInvalid = (fieldName: keyof FormData) => !!errors[fieldName];
 
+  async function selectImage(mode: string) {
+    let result: any;
+    try {
+      if (mode === 'gallery') {
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+        result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 1,
+        });
+      } else {
+        await ImagePicker.requestCameraPermissionsAsync();
+        result = await ImagePicker.launchCameraAsync({
+          cameraType: ImagePicker.CameraType.back,
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 1,
+        });
+      }
+      if (!result.canceled) {
+        setImage(result.assets[0].uri);
+      }
+    } catch (error) {
+      console.log(error);
+      Toast.show('Please allow camera permission and retry.', {
+        duration: Toast.durations.LONG,
+      });
+    }
+  }
   return (
     <>
       <View style={{ flex: 1 }}>
@@ -95,7 +134,10 @@ export default function FullScreenRadialGradientWithContent() {
                   </Avatar>
                 </Pressable>
 
-                <Text bold>{user?.fullName.slice(0, 10)}</Text>
+                <VStack>
+                  <Text bold>{user?.fullName?.slice(0, 10) ?? ''}</Text>
+                  <Text size='xs' bold>{user?.phone?.slice(0, 10) ?? ''}</Text>
+                </VStack>
               </HStack>
               <HStack space="2xl">
                 <HStack className="items-center">
@@ -131,7 +173,7 @@ export default function FullScreenRadialGradientWithContent() {
                 <ButtonIcon />
                 <ButtonIcon />
               </VStack>
-              <Image source={logo} style={{ width: 200, height: 200,objectFit:"contain" }} />
+              <Image source={logo} style={{ width: 200, height: 200, objectFit: 'contain' }} />
               <VStack space="4xl" className="mt-5">
                 <ButtonIcon />
                 <ButtonIcon />
@@ -141,15 +183,15 @@ export default function FullScreenRadialGradientWithContent() {
             <VStack space="md" className="flex items-center w-[80%] mx-auto">
               <View
                 style={{
-                  padding: 5,
+                  paddingBottom: 5,
                   paddingTop: 0,
-                  borderRadius: 8,
+                  borderRadius: 50,
                   backgroundColor: '#0d6b1e',
                   shadowColor: '#000',
                   shadowOpacity: 0.5,
                   shadowRadius: 8,
                   shadowOffset: { width: 0, height: 4 },
-                  width: '80%',
+                  width: '100%',
                 }}
               >
                 <LinearGradient
@@ -158,7 +200,7 @@ export default function FullScreenRadialGradientWithContent() {
                   end={{ x: 0, y: 1 }}
                   style={{
                     paddingVertical: 30,
-                    borderRadius: 8,
+                    borderRadius: 50,
                     borderWidth: 1,
                     borderColor: '#c8ffc8',
                     justifyContent: 'center',
@@ -179,48 +221,47 @@ export default function FullScreenRadialGradientWithContent() {
                   </Text>
                 </LinearGradient>
               </View>
-              <Pressable onPress={()=>router.push("/(app)/active")} className='w-full'>
-
-              <View
-                style={{
-                  padding: 5,
-                  paddingTop: 0,
-                  borderRadius: 8,
-                  backgroundColor: '#b57902',
-                  shadowColor: '#000',
-                  shadowOpacity: 0.5,
-                  shadowRadius: 8,
-                  shadowOffset: { width: 0, height: 4 },
-                  width:"100%"
-                }}
-              >
-                <LinearGradient
-                  colors={['#FFD700', '#FFB200', '#E69A00']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
+              <Pressable onPress={() => router.push('/(app)/active')} className="w-full">
+                <View
                   style={{
-                    paddingVertical: 30,
-                    borderRadius: 8,
-                    borderWidth: 1,
-                    borderColor: '#c8ffc8',
-                    justifyContent: 'center',
-                    alignItems: 'center',
+                    paddingBottom: 5,
+                    paddingTop: 0,
+                    borderRadius: 50,
+                    backgroundColor: '#b57902',
+                    shadowColor: '#000',
+                    shadowOpacity: 0.5,
+                    shadowRadius: 8,
+                    shadowOffset: { width: 0, height: 4 },
+                    width: '100%',
                   }}
                 >
-                  <Text
+                  <LinearGradient
+                    colors={['#FFD700', '#FFB200', '#E69A00']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
                     style={{
-                      color: 'white',
-                      fontWeight: '700',
-                      fontSize: 18,
-                      textShadowColor: 'rgba(0,0,0,0.4)',
-                      textShadowOffset: { width: 1, height: 2 },
-                      textShadowRadius: 3,
+                      paddingVertical: 30,
+                      borderRadius: 50,
+                      borderWidth: 1,
+                      borderColor: '#c8ffc8',
+                      justifyContent: 'center',
+                      alignItems: 'center',
                     }}
                   >
-                    Join a game
-                  </Text>
-                </LinearGradient>
-              </View>
+                    <Text
+                      style={{
+                        color: 'white',
+                        fontWeight: '700',
+                        fontSize: 18,
+                        textShadowColor: 'rgba(0,0,0,0.4)',
+                        textShadowOffset: { width: 1, height: 2 },
+                        textShadowRadius: 3,
+                      }}
+                    >
+                      Join a game
+                    </Text>
+                  </LinearGradient>
+                </View>
               </Pressable>
 
               <Pressable onPress={() => router.push('/(app)/terms')}>
@@ -238,24 +279,26 @@ export default function FullScreenRadialGradientWithContent() {
         size="lg"
       >
         <ModalBackdrop />
-        <ModalContent className="bg-[#071843] border-0">
+        <ModalContent className="bg-[#132e61] border-0 rounded-2xl">
           <ModalHeader>
-            <Text size="lg" bold>
-              Update User
+            <Text size="lg" bold className="text-center w-full">
+              Update user profile
             </Text>
           </ModalHeader>
           <ModalBody>
             <VStack space="sm">
               <Center>
-                <Avatar size="xl">
-                  <AvatarFallbackText>{user?.fullName}</AvatarFallbackText>
-                  <AvatarImage
-                    source={{
-                      uri: user?.profilePic,
-                    }}
-                    className="rounded-none "
-                  />
-                </Avatar>
+                <Pressable onPress={() => selectImage('gallery')}>
+                  <Avatar size="xl" className="rounded-lg ">
+                    <AvatarFallbackText className="rounded-lg ">{user?.fullName}</AvatarFallbackText>
+                    <AvatarImage
+                      source={{
+                        uri: image || user?.profilePic,
+                      }}
+                      className="rounded-lg "
+                    />
+                  </Avatar>
+                </Pressable>
               </Center>
               <Controller
                 control={control}
@@ -263,7 +306,7 @@ export default function FullScreenRadialGradientWithContent() {
                 rules={{ required: 'Name is required' }} // 👈 Validation rule
                 render={({ field: { onChange, onBlur, value } }) => (
                   <FormControl isInvalid={isInvalid('full_name')} className="mb-4">
-                    <Text>Full Name</Text>
+                    <Text>Full name</Text>
                     <Input className="h-12">
                       <InputSlot className="pl-3">
                         <Feather name="user" size={16} color="white" />
@@ -285,7 +328,7 @@ export default function FullScreenRadialGradientWithContent() {
                 rules={{ required: 'Phone number is required' }} // 👈 Validation rule
                 render={({ field: { onChange, onBlur, value } }) => (
                   <FormControl isInvalid={isInvalid('phone')} className="mb-4">
-                    <Text>Phone</Text>
+                    <Text>Phone number</Text>
                     <Input className="h-12">
                       <InputSlot className="pl-3">
                         <Feather name="phone-call" size={16} color="white" />
@@ -319,19 +362,14 @@ export default function FullScreenRadialGradientWithContent() {
                 setShowModal(false);
               }}
             >
-              <ButtonText>Cancel</ButtonText>
+              <ButtonText className="text-white">Cancel</ButtonText>
             </Button>
-            {/* <Button
-              onPress={() => {
-                setShowModal(false);
-              }}
-            >
-              <ButtonText>Save</ButtonText>
-            </Button> */}
+
             <Pressable onPress={handleSubmit(onUpdate)}>
-              <Box className="bg-green-600 py-2 px-4 rounded-md">
+              <HStack space="sm" className="bg-green-600 py-2 px-4 rounded-md">
+                {isLoading && <ActivityIndicator color={'white'} size={'small'} />}
                 <Text>Update</Text>
-              </Box>
+              </HStack>
             </Pressable>
           </ModalFooter>
         </ModalContent>
@@ -384,6 +422,8 @@ import { Animated } from 'react-native';
 import { Input, InputField, InputSlot } from '@/components/ui/input';
 import { Controller, useForm } from 'react-hook-form';
 import { FormControl, FormControlError, FormControlErrorText } from '@/components/ui/form-control';
+import { useChangeProfileMutation } from '@/store/service/user';
+import { setUser } from '@/store/slice/user';
 
 export function JoinButton({ color }: { color: 'yellow' | 'green' }) {
   const options = {

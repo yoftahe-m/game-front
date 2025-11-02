@@ -56,5 +56,5 @@ export const userApi = createApi({
   }),
 });
 
-export const { useSignupMutation, useSigninMutation, useChangeNameMutation,useChangeProfilePicMutation } =
+export const { useSignupMutation, useSigninMutation, useChangeNameMutation,useChangeProfilePicMutation,useChangeProfileMutation } =
   userApi;

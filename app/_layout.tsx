@@ -10,11 +10,13 @@ import { router, Slot, Stack, usePathname } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { Fab, FabIcon } from '@/components/ui/fab';
 import { MoonIcon, SunIcon } from '@/components/ui/icon';
-import { Provider, useSelector } from 'react-redux';
+import { Provider, useDispatch, useSelector } from 'react-redux';
 import { persistor, RootState, store } from '@/store';
 import { ActivityIndicator, View } from 'react-native';
 import { PersistGate } from 'redux-persist/integration/react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import baseQuery from '@/store/baseQuery';
+import { logout, setCredentials } from '@/store/slice/user';
 
 export {
   // Catch any errors thrown by the Layout component.
@@ -77,19 +79,50 @@ function RootLayoutNav() {
 }
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
-  const isRehydrated = useSelector((state: RootState) => state._persist.rehydrated);
   const { refreshToken } = useSelector((state: RootState) => state.user);
-  const [isFirstLoad, setIsFirstLoad] = useState(true);
+  const dispatch = useDispatch();
+  const [ready, setReady] = useState(false);
+  const [targetRoute, setTargetRoute] = useState<'/(app)/(tabs)' | '/signin' | null>(null);
+
   useEffect(() => {
-    if (isRehydrated && !refreshToken) router.replace('/signin');
-    else if (isRehydrated && refreshToken) {
-      setIsFirstLoad(false);
-      router.replace('/(app)/(tabs)');
-    }
-  }, [isRehydrated, refreshToken]);
+    const init = async () => {
+      try {
+        if (!refreshToken) {
+          setTargetRoute('/signin');
+          return;
+        }
+
+        const res = await baseQuery(
+          { url: '/user/refreshToken', method: 'POST', body: { refreshToken } },
+          { getState: () => store.getState(), dispatch } as any,
+          {}
+        );
+
+        if (res.data) {
+          const { accessToken: newAccess, refreshToken: newRefresh } = res.data as any;
+          dispatch(setCredentials({ accessToken: newAccess, refreshToken: newRefresh }));
+          setTargetRoute('/(app)/(tabs)');
+        } else {
+          dispatch(logout());
+          setTargetRoute('/signin');
+        }
+      } catch {
+        dispatch(logout());
+        setTargetRoute('/signin');
+      } finally {
+        await SplashScreen.hideAsync();
+        setReady(true);
+      }
+    };
+
+    init();
+  }, []);
+
   useEffect(() => {
-    if (isRehydrated) SplashScreen.hideAsync();
-  }, [isRehydrated]);
-  if (!isRehydrated) return null;
+    if (ready && targetRoute) router.replace(targetRoute);
+  }, [ready, targetRoute]);
+
+  if (!ready) return null;
+
   return <>{children}</>;
 }
