@@ -1,7 +1,7 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { useRef, useState } from 'react';
-import { Dimensions, View, StyleSheet, Image, ActivityIndicator } from 'react-native';
-import Svg, { Defs, RadialGradient, Stop, Rect } from 'react-native-svg';
+import React, { ReactNode, useRef, useState } from 'react';
+import { Dimensions, View, StyleSheet, Image, ActivityIndicator, Linking, Alert } from 'react-native';
+import Svg, { Defs, RadialGradient, Stop, Rect, G, Path, Pattern } from 'react-native-svg';
 import logo from '@/assets/images/logo.png';
 import { VStack } from '@/components/ui/vstack';
 import { Center } from '@/components/ui/center';
@@ -17,12 +17,27 @@ import { useDispatch, useSelector } from 'react-redux';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 const { width, height } = Dimensions.get('window');
 import Toast from 'react-native-root-toast';
+import Gear from '@/assets/icons/Gear';
+import Logout from '@/assets/icons/Logout';
+import Wheel from '@/assets/icons/Wheel';
+import Support from '@/assets/icons/Support';
+import Add from '@/assets/icons/Add';
 
 import { Modal, ModalBackdrop, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter } from '@/components/ui/modal';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Heading } from '@/components/ui/heading';
 import { Icon, CloseIcon } from '@/components/ui/icon';
 import * as ImagePicker from 'expo-image-picker';
+import { Animated } from 'react-native';
+import { Input, InputField, InputSlot } from '@/components/ui/input';
+import { Controller, useForm } from 'react-hook-form';
+import { FormControl, FormControlError, FormControlErrorText } from '@/components/ui/form-control';
+import { useChangeProfileMutation } from '@/store/service/user';
+import { logout, setUser } from '@/store/slice/user';
+import Money from '@/assets/icons/Money';
+import Joystick from '@/assets/icons/Controller';
+import Die from '@/assets/icons/Die';
+import Coin from '@/assets/icons/Coin';
 type FormData = {
   full_name: string;
   phone: string;
@@ -31,6 +46,8 @@ type FormData = {
 export default function FullScreenRadialGradientWithContent() {
   const dispatch = useDispatch();
   const [showModal, setShowModal] = useState(false);
+  const [showSupportModal, setShowSupportModal] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [image, setImage] = useState('');
   const user = useSelector((state: RootState) => state.user.data);
   const insets = useSafeAreaInsets();
@@ -100,27 +117,59 @@ export default function FullScreenRadialGradientWithContent() {
       });
     }
   }
+
+  const openEmail = () => {
+    const email = 'nati@gmail.com';
+    const subject = 'Support';
+    const body = 'Help me';
+
+    const url = `mailto:${email}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    Linking.canOpenURL(url)
+      .then((supported) => {
+        if (!supported) {
+          // Alert.alert('Error', 'Email client is not available');
+        } else {
+          return Linking.openURL(url);
+        }
+      })
+      .catch((err) => console.error('An error occurred', err));
+  };
+
+  function handleLogout() {
+    dispatch(logout());
+    router.replace('/signin');
+  }
+  const cols = Math.ceil(width / 28) + 1;
+  const rows = Math.ceil(height / 49) + 1;
+  const HEX_PATH =
+    'M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z';
+
+  const scale = 1; // increase size
+  const hexWidth = 28;
+  const hexHeight = 49;
   return (
     <>
       <View style={{ flex: 1 }}>
         {/* Radial Gradient Background */}
-        {/* <Svg height={height} width={width} style={StyleSheet.absoluteFillObject}>
-          <Defs>
-            <RadialGradient id="grad" cx="50%" cy="50%" r="70%">
-              <Stop offset="0%" stopColor="#1242b0" />
-              <Stop offset="25%" stopColor="#0f368f" />
-              <Stop offset="50%" stopColor="#0b2c72" />
-              <Stop offset="75%" stopColor="#092259" />
-              <Stop offset="100%" stopColor="#071843" />
-            </RadialGradient>
-          </Defs>
-          <Rect width="100%" height="100%" fill="url(#grad)" />
-        </Svg> */}
+        <Svg height={height} width={width} style={StyleSheet.absoluteFillObject}>
+          <G fill="#0c245c" fillRule="nonzero">
+            {Array.from({ length: rows }).map((_, row) =>
+              Array.from({ length: cols }).map((_, col) => (
+                <Path
+                  key={`${row}-${col}`}
+                  d={HEX_PATH}
+                  transform={`translate(${col * hexWidth * scale}, ${row * hexHeight * scale}) scale(${scale})`}
+                />
+              ))
+            )}
+          </G>
+        </Svg>
 
         {/* Components on top */}
         <VStack space="lg" className="flex-1">
           <LinearGradient colors={['#0e1f4d', '#1d3285']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }}>
-            <HStack space="md" className="items-center justify-between px-2 pb-3" style={{ paddingTop: insets.top }}>
+            <HStack space="md" className="items-center justify-between px-2 pb-3 border-b border-[#113da6]" style={{ paddingTop: insets.top }}>
               <HStack space="sm" className="items-center">
                 <Pressable onPress={() => setShowModal(true)}>
                   <Avatar size="md" className="border border-white rounded-lg overflow-hidden">
@@ -136,26 +185,27 @@ export default function FullScreenRadialGradientWithContent() {
 
                 <VStack>
                   <Text bold>{user?.fullName?.slice(0, 10) ?? ''}</Text>
-                  <Text size='xs' bold>{user?.phone?.slice(0, 10) ?? ''}</Text>
+                  <Text size="xs" bold>
+                    {user?.phone?.slice(0, 10) ?? ''}
+                  </Text>
                 </VStack>
               </HStack>
               <HStack space="2xl">
-                <HStack className="items-center">
-                  <Box className="size-6 bg-amber-300 flex items-center justify-center rounded-full">
-                    <FontAwesome5 name="coins" size={12} color="white" />
-                  </Box>
-                  <Text className="h-6 px-2 " bold>
+                <HStack className="items-center relative">
+                  <Money style={{ transform: [{ rotate: '120deg' }], marginBottom: 10 }} width={30} height={18} />
+                  <Text className="h-6 px-2 border-y border-[#113da6] " bold>
                     {user?.coins}
                   </Text>
-                  <Pressable className="size-5 bg-green-600 flex items-center justify-center " onPress={() => router.push('/(app)/wallet')}>
+                  <Pressable className="size-8 bg-green-600 flex items-center justify-center " onPress={() => router.push('/(app)/wallet')}>
                     <FontAwesome5 name="plus" size={12} color="white" />
                   </Pressable>
                 </HStack>
 
                 <HStack className="items-center">
-                  <Box className="size-6 bg-amber-300 flex items-center justify-center rounded-full">
+                  {/* <Box className="size-6 bg-amber-300 flex items-center justify-center rounded-full">
                     <FontAwesome5 name="coins" size={12} color="white" />
-                  </Box>
+                  </Box> */}
+                  <Coin/>
                   <Text className="h-6 px-2" bold>
                     {user?.rewards}
                   </Text>
@@ -167,17 +217,42 @@ export default function FullScreenRadialGradientWithContent() {
             </HStack>
           </LinearGradient>
           <VStack className="justify-between flex-1 p-2 pb-16">
-            <HStack className="justify-between">
-              <VStack space="4xl" className="mt-5">
-                <ButtonIcon />
-                <ButtonIcon />
-                <ButtonIcon />
+            <HStack className="justify-between flex-1 ">
+              <VStack space="3xl" className="mt-5">
+                <ButtonIcon icon={<Gear />} onPress={() => {}} />
+                <ButtonIcon
+                  icon={<Support />}
+                  onPress={() => {
+                    setShowSupportModal(true);
+                  }}
+                />
+                <ButtonIcon
+                  icon={<Logout />}
+                  onPress={() => {
+                    setShowLogoutModal(true);
+                  }}
+                />
               </VStack>
               <Image source={logo} style={{ width: 200, height: 200, objectFit: 'contain' }} />
-              <VStack space="4xl" className="mt-5">
-                <ButtonIcon />
-                <ButtonIcon />
-                <ButtonIcon />
+              <VStack space="3xl" className="mt-5">
+                <ButtonIcon
+                  icon={<Wheel />}
+                  onPress={() => {
+                    router.push('/(app)/coming-soon');
+                  }}
+                />
+                <ButtonIcon
+                  icon={<Gear />}
+                  onPress={() => {
+                    router.push('/(app)/coming-soon');
+                  }}
+                />
+                <ButtonIcon
+                  icon={<Gear />}
+                  onPress={() => {
+                    router.push('/(app)/coming-soon');
+                  }}
+                />
               </VStack>
             </HStack>
             <VStack space="md" className="flex items-center w-[80%] mx-auto">
@@ -185,8 +260,9 @@ export default function FullScreenRadialGradientWithContent() {
                 style={{
                   paddingBottom: 5,
                   paddingTop: 0,
+
                   borderRadius: 50,
-                  backgroundColor: '#0d6b1e',
+                  backgroundColor: '#4046ad',
                   shadowColor: '#000',
                   shadowOpacity: 0.5,
                   shadowRadius: 8,
@@ -195,11 +271,12 @@ export default function FullScreenRadialGradientWithContent() {
                 }}
               >
                 <LinearGradient
-                  colors={['#4CFF4C', '#00C851', '#009432']}
+                  colors={['#8f94fb', '#4e54c8']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 0, y: 1 }}
                   style={{
-                    paddingVertical: 30,
+                    height: 80,
+                    // paddingVertical: 30,
                     borderRadius: 50,
                     borderWidth: 1,
                     borderColor: '#c8ffc8',
@@ -207,47 +284,7 @@ export default function FullScreenRadialGradientWithContent() {
                     alignItems: 'center',
                   }}
                 >
-                  <Text
-                    style={{
-                      color: 'white',
-                      fontWeight: '700',
-                      fontSize: 18,
-                      textShadowColor: 'rgba(0,0,0,0.4)',
-                      textShadowOffset: { width: 1, height: 2 },
-                      textShadowRadius: 3,
-                    }}
-                  >
-                    Start a game
-                  </Text>
-                </LinearGradient>
-              </View>
-              <Pressable onPress={() => router.push('/(app)/active')} className="w-full">
-                <View
-                  style={{
-                    paddingBottom: 5,
-                    paddingTop: 0,
-                    borderRadius: 50,
-                    backgroundColor: '#b57902',
-                    shadowColor: '#000',
-                    shadowOpacity: 0.5,
-                    shadowRadius: 8,
-                    shadowOffset: { width: 0, height: 4 },
-                    width: '100%',
-                  }}
-                >
-                  <LinearGradient
-                    colors={['#FFD700', '#FFB200', '#E69A00']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 0, y: 1 }}
-                    style={{
-                      paddingVertical: 30,
-                      borderRadius: 50,
-                      borderWidth: 1,
-                      borderColor: '#c8ffc8',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
-                  >
+                  <HStack className="justify-center items-center">
                     <Text
                       style={{
                         color: 'white',
@@ -258,8 +295,59 @@ export default function FullScreenRadialGradientWithContent() {
                         textShadowRadius: 3,
                       }}
                     >
-                      Join a game
+                      Start a game
                     </Text>
+                    <Box className=" flex items-center justify-center  w-[80px] overflow-hidden">
+                      <Die width={105} height={50} />
+                    </Box>
+                  </HStack>
+                </LinearGradient>
+              </View>
+              <Pressable onPress={() => router.push('/(app)/active')} className="w-full">
+                <View
+                  style={{
+                    paddingBottom: 5,
+                    paddingTop: 0,
+                    borderRadius: 50,
+                    backgroundColor: '#85265b',
+                    shadowColor: '#000',
+                    shadowOpacity: 0.5,
+                    shadowRadius: 8,
+                    shadowOffset: { width: 0, height: 4 },
+                    width: '100%',
+                  }}
+                >
+                  <LinearGradient
+                    colors={['#f953c6', '#b91d73']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 0, y: 1 }}
+                    style={{
+                      height: 80,
+                      // paddingVertical: 30,
+                      borderRadius: 50,
+                      borderWidth: 1,
+                      borderColor: '#c8ffc8',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <HStack className="justify-center items-center">
+                      <Box className=" flex items-center justify-center  w-[80px] overflow-hidden">
+                        <Joystick width={120} height={75} />
+                      </Box>
+                      <Text
+                        style={{
+                          color: 'white',
+                          fontWeight: '700',
+                          fontSize: 18,
+                          textShadowColor: 'rgba(0,0,0,0.4)',
+                          textShadowOffset: { width: 1, height: 2 },
+                          textShadowRadius: 3,
+                        }}
+                      >
+                        Join a game
+                      </Text>
+                    </HStack>
                   </LinearGradient>
                 </View>
               </Pressable>
@@ -374,13 +462,87 @@ export default function FullScreenRadialGradientWithContent() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+      <Modal
+        isOpen={showSupportModal}
+        onClose={() => {
+          setShowSupportModal(false);
+        }}
+        size="lg"
+      >
+        <ModalBackdrop />
+        <ModalContent className="bg-[#132e61] border-0 rounded-2xl">
+          <ModalHeader>
+            <Text size="lg" bold>
+              Customer Support
+            </Text>
+          </ModalHeader>
+          <ModalBody>
+            <Text>Contact customer support.</Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              variant="outline"
+              action="secondary"
+              className="mr-3"
+              onPress={() => {
+                setShowSupportModal(false);
+              }}
+            >
+              <ButtonText className="text-white">Cancel</ButtonText>
+            </Button>
+
+            <Pressable onPress={openEmail}>
+              <HStack space="sm" className="bg-green-600 py-2 px-4 rounded-md">
+                <Text>Contact</Text>
+              </HStack>
+            </Pressable>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+      <Modal
+        isOpen={showLogoutModal}
+        onClose={() => {
+          setShowLogoutModal(false);
+        }}
+        size="lg"
+      >
+        <ModalBackdrop />
+        <ModalContent className="bg-[#132e61] border-0 rounded-2xl">
+          <ModalHeader>
+            <Text size="lg" bold>
+              Logout
+            </Text>
+          </ModalHeader>
+          <ModalBody>
+            <Text>Are you sure you want to logout?</Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              variant="outline"
+              action="secondary"
+              className="mr-3"
+              onPress={() => {
+                setShowSupportModal(false);
+              }}
+            >
+              <ButtonText className="text-white">Cancel</ButtonText>
+            </Button>
+
+            <Pressable onPress={handleLogout}>
+              <HStack space="sm" className="bg-red-600 py-2 px-4 rounded-md">
+                <Text>LogOut</Text>
+              </HStack>
+            </Pressable>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </>
   );
 }
 
-function ButtonIcon() {
+function ButtonIcon({ icon, onPress }: { icon: ReactNode; onPress: () => void }) {
   return (
-    <Pressable onPress={() => router.push('/(app)/active')} onPressIn={() => {}} onPressOut={() => {}} className="flex-1">
+    <Pressable onPress={onPress} onPressIn={() => {}} onPressOut={() => {}}>
       <Animated.View
         style={{
           padding: 5,
@@ -411,89 +573,8 @@ function ButtonIcon() {
             flex: 1,
           }}
         >
+          {icon}
           {/* <Entypo name="chevron-with-circle-down" size={24} color="white" /> */}
-        </LinearGradient>
-      </Animated.View>
-    </Pressable>
-  );
-}
-
-import { Animated } from 'react-native';
-import { Input, InputField, InputSlot } from '@/components/ui/input';
-import { Controller, useForm } from 'react-hook-form';
-import { FormControl, FormControlError, FormControlErrorText } from '@/components/ui/form-control';
-import { useChangeProfileMutation } from '@/store/service/user';
-import { setUser } from '@/store/slice/user';
-
-export function JoinButton({ color }: { color: 'yellow' | 'green' }) {
-  const options = {
-    yellow: { gradient: ['#FFD700', '#FFB200', '#E69A00'], border: '#fff2cc' },
-    green: { gradient: ['#4CFF4C', '#00C851', '#009432'], border: '#c8ffc8' },
-  };
-  const scale = useRef(new Animated.Value(1)).current;
-
-  const handlePressIn = () => {
-    Animated.spring(scale, {
-      toValue: 0.95,
-      useNativeDriver: true,
-      speed: 20,
-      bounciness: 6,
-    }).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.spring(scale, {
-      toValue: 1,
-      useNativeDriver: true,
-      speed: 20,
-      bounciness: 6,
-    }).start();
-  };
-
-  return (
-    <Pressable onPress={() => router.push('/(app)/active')} onPressIn={handlePressIn} onPressOut={handlePressOut} className="flex-1">
-      <Animated.View
-        style={{
-          transform: [{ scale }],
-          padding: 5,
-          paddingTop: 0,
-          borderRadius: 8,
-          backgroundColor: options[color].border,
-          shadowColor: '#000',
-          shadowOpacity: 0.5,
-          shadowRadius: 8,
-          shadowOffset: { width: 0, height: 4 },
-          width: '100%',
-          aspectRatio: 1,
-        }}
-      >
-        <LinearGradient
-          colors={options[color].gradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          style={{
-            paddingVertical: 14,
-            paddingHorizontal: 35,
-            borderRadius: 8,
-            borderWidth: 1,
-            borderColor: '#fff2cc',
-            justifyContent: 'center',
-            alignItems: 'center',
-            flex: 1,
-          }}
-        >
-          <Text
-            style={{
-              color: '#fffbea',
-              fontWeight: '700',
-              fontSize: 18,
-              textShadowColor: 'rgba(0,0,0,0.4)',
-              textShadowOffset: { width: 1, height: 2 },
-              textShadowRadius: 3,
-            }}
-          >
-            Join a game
-          </Text>
         </LinearGradient>
       </Animated.View>
     </Pressable>

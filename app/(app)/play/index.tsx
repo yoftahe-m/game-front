@@ -23,6 +23,7 @@ const PlayScreen = () => {
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const [forfeitModal, setForfeitModal] = useState(false);
+  const [gameModal, setGameModal] = useState(true);
   const { game } = useLocalSearchParams<{ game: string }>();
   const [pendingAction, setPendingAction] = useState<any>(null);
   const user = useSelector((state: RootState) => state.user.data);
@@ -134,6 +135,34 @@ const PlayScreen = () => {
                 <Text>Forfeit</Text>
               </Box>
             </HStack>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
+      <Modal
+        isOpen={gameModal}
+        onClose={() => {
+          setGameModal(false);
+        }}
+        size="lg"
+      >
+        <ModalBackdrop />
+        <ModalContent className="bg-[#132e61] border-0 rounded-2xl">
+          <ModalHeader>
+            <Text size="lg" bold>
+              {parseGame.winner === user?.id && 'You Won'}
+              {parseGame.winner === 'draw' && 'Its a Draw'}
+              {parseGame.winner !== 'draw' && parseGame.winner !== user?.id && 'You Lost'}
+            </Text>
+          </ModalHeader>
+          <ModalBody>
+            
+          </ModalBody>
+          <ModalFooter>
+            <Pressable onPress={() => {}} className='w-full'>
+              <HStack space="sm" className="bg-[#0e1f4d] py-2 px-4 rounded-lg w-full justify-center">
+                <Text>Go Back</Text>
+              </HStack>
+            </Pressable>
           </ModalFooter>
         </ModalContent>
       </Modal>

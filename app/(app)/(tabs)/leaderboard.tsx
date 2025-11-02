@@ -37,7 +37,7 @@ export default function LeaderboardScreen() {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
+    <SafeAreaView style={{ flex: 1, paddingBottom: 20 }}>
       <VStack space="lg" className="flex-1 m-2">
         <Center className="">
           <HStack className="items-end" space="sm">

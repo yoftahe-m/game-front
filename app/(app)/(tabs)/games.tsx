@@ -16,7 +16,7 @@ export default function GamesScreen() {
   const numColumns = width < 500 ? 2 : width < 900 ? 3 : 4;
 
   return (
-    <SafeAreaView style={{ flex: 1, paddingHorizontal: 8 }}>
+    <SafeAreaView style={{ flex: 1, paddingHorizontal: 8, paddingBottom: 20 }}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 16 }}>
         <Text size="xl" bold className="py-4">
           All Games
@@ -34,7 +34,6 @@ export default function GamesScreen() {
                     <Text size="lg" bold>
                       {game.title}
                     </Text>
-                   
                   </VStack>
                 </VStack>
               </Pressable>
