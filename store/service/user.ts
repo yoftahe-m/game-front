@@ -1,16 +1,17 @@
-import { createApi } from "@reduxjs/toolkit/query/react";
+import { createApi } from '@reduxjs/toolkit/query/react';
 
-import baseQueryWithReAuth from "../baseQuery";
+import baseQueryWithReAuth from '../baseQuery';
+import { User } from '../slice/user';
 
 export const userApi = createApi({
-  reducerPath: "userApi",
+  reducerPath: 'userApi',
   baseQuery: baseQueryWithReAuth,
   endpoints: (builder) => ({
     signup: builder.mutation({
       query: ({ data }) => {
         return {
           url: `user/register`,
-          method: "POST",
+          method: 'POST',
           body: data,
         };
       },
@@ -19,7 +20,7 @@ export const userApi = createApi({
       query: ({ data }) => {
         return {
           url: `user/login`,
-          method: "POST",
+          method: 'POST',
           body: data,
         };
       },
@@ -28,7 +29,7 @@ export const userApi = createApi({
       query: (data) => {
         return {
           url: `user/changeName`,
-          method: "POST",
+          method: 'POST',
           body: data,
         };
       },
@@ -37,7 +38,7 @@ export const userApi = createApi({
       query: (data) => {
         return {
           url: `user/changeProfilePic`,
-          method: "POST",
+          method: 'POST',
           body: data,
           formData: true,
         };
@@ -47,14 +48,20 @@ export const userApi = createApi({
       query: (data) => {
         return {
           url: `user/changeProfile`,
-          method: "POST",
+          method: 'POST',
           body: data,
           formData: true,
+        };
+      },
+    }),
+    getLeaderboard: builder.query<User[], { name: string }>({
+      query: ({ name }) => {
+        return {
+          url: `user/search?name=${name}`,
         };
       },
     }),
   }),
 });
 
-export const { useSignupMutation, useSigninMutation, useChangeNameMutation,useChangeProfilePicMutation,useChangeProfileMutation } =
-  userApi;
+export const { useSignupMutation, useSigninMutation, useChangeNameMutation, useChangeProfilePicMutation, useChangeProfileMutation } = userApi;

@@ -1,46 +1,42 @@
+import { useDispatch } from 'react-redux';
 import { useEffect, useState } from 'react';
-import { useDispatch, useSelector } from 'react-redux';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { Entypo, FontAwesome5 } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { RootState } from '@/store';
+import { Game } from '@/types/game';
 import { getSocket } from '@/socket';
+import Ludo from './_components/ludo';
+import Star from '@/assets/icons/Star';
+import Draw from '@/assets/icons/Draw';
+import Back from '@/assets/icons/Back';
+import Money from '@/assets/icons/Money';
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { setCoins } from '@/store/slice/user';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
 import TicTacToe from './_components/tic-tac-toe';
-import Ludo from './_components/ludo';
 import { Pressable } from '@/components/ui/pressable';
-import { Modal, ModalBackdrop, ModalBody, ModalContent, ModalFooter, ModalHeader } from '@/components/ui/modal';
-import Star from '@/assets/icons/Star';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
-import Money from '@/assets/icons/Money';
-import { View } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import Back from '@/assets/icons/Back';
-import Draw from '@/assets/icons/draw';
+import { Modal, ModalBackdrop, ModalBody, ModalContent, ModalFooter, ModalHeader } from '@/components/ui/modal';
 
 const PlayScreen = () => {
   const socket = getSocket();
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
-  const [forfeitModal, setForfeitModal] = useState(false);
   const [gameModal, setGameModal] = useState(false);
+  const [forfeitModal, setForfeitModal] = useState(false);
   const { game } = useLocalSearchParams<{ game: string }>();
   const [pendingAction, setPendingAction] = useState<any>(null);
-  const user = useSelector((state: RootState) => state.user.data);
 
-  const [parseGame, setParseGame] = useState(JSON.parse(game));
-  // const parseGame = JSON.parse(game);
+  const [parseGame, setParseGame] = useState<Game>(JSON.parse(game));
 
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (e) => {
-      // Allow replace or reset actions without showing modal
       if (e.data.action.type === 'REPLACE' || e.data.action.type === 'RESET') {
         return;
       }
@@ -50,7 +46,6 @@ const PlayScreen = () => {
         setPendingAction(e.data.action);
         setForfeitModal(true);
       }
-      // Block goBack or pop actions only
     });
 
     return unsubscribe;
@@ -67,19 +62,9 @@ const PlayScreen = () => {
   useEffect(() => {
     if (!socket) return;
     socket.on('gameOver', (game) => {
-      console.log('game ended');
       setParseGame(game);
 
       setGameModal(true);
-      // if (game.winner === user?.id) {
-      //   dispatch(setCoins({ amount: Number(game.amount) }));
-      //   router.replace({ pathname: '/(app)/won', params: { game: JSON.stringify(game) } });
-      // } else if (game.winner === 'draw') {
-      //   router.replace({ pathname: '/(app)/draw', params: { game: JSON.stringify(game) } });
-      // } else {
-      //   dispatch(setCoins({ amount: Number(-game.amount) }));
-      //   router.replace({ pathname: '/(app)/lost', params: { game: JSON.stringify(game) } });
-      // }
     });
 
     return () => {
@@ -180,16 +165,16 @@ const PlayScreen = () => {
                     </Box>
 
                     <Avatar size="2xl" className="border border-white rounded-lg overflow-hidden">
-                      <AvatarFallbackText>{parseGame.players.find((p) => p.userId === parseGame.winner).username}</AvatarFallbackText>
+                      <AvatarFallbackText>{parseGame.players.find((p) => p.userId === parseGame.winner)?.username}</AvatarFallbackText>
                       <AvatarImage
                         source={{
-                          uri: parseGame.players.find((p) => p.userId === parseGame.winner).picture,
+                          uri: parseGame.players.find((p) => p.userId === parseGame.winner)?.picture,
                         }}
                         className="rounded-none "
                       />
                     </Avatar>
                     <Text size="2xl" bold>
-                      {parseGame.players.find((p) => p.userId === parseGame.winner).username} Won
+                      {parseGame.players.find((p) => p.userId === parseGame.winner)?.username} Won
                     </Text>
                     <HStack space="md" className="items-center">
                       <Text size="lg" bold>
@@ -204,7 +189,7 @@ const PlayScreen = () => {
           </ModalBody>
           <ModalFooter>
             <Pressable onPress={() => router.back()} className="w-full">
-              <View
+              <Box
                 style={{
                   paddingBottom: 5,
                   paddingTop: 0,
@@ -224,7 +209,6 @@ const PlayScreen = () => {
                   end={{ x: 0, y: 1 }}
                   style={{
                     height: 50,
-                    // paddingVertical: 30,
                     borderRadius: 50,
                     borderWidth: 1,
                     borderColor: '#c8ffc8',
@@ -239,7 +223,6 @@ const PlayScreen = () => {
                       style={{
                         color: 'white',
                         fontWeight: '700',
-
                         textShadowColor: 'rgba(0,0,0,0.4)',
                         textShadowOffset: { width: 1, height: 2 },
                         textShadowRadius: 3,
@@ -249,7 +232,7 @@ const PlayScreen = () => {
                     </Text>
                   </HStack>
                 </LinearGradient>
-              </View>
+              </Box>
             </Pressable>
           </ModalFooter>
         </ModalContent>

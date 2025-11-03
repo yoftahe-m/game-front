@@ -1,18 +1,19 @@
-import React, { useState } from 'react';
-import { View, StyleSheet, ImageBackground } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import bg from '@/assets/images/ss.png';
-import { Box } from '@/components/ui/box';
-import { HStack } from '@/components/ui/hstack';
-import { Text } from '@/components/ui/text';
-import { Button, ButtonIcon, ButtonText } from '@/components/ui/button';
-import { EditIcon } from '@/components/ui/icon';
-import { Modal, ModalBackdrop, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter } from '@/components/ui/modal';
-import { FontAwesome5 } from '@expo/vector-icons';
+import React from "react";
+import { Canvas, Circle, Group } from "@shopify/react-native-skia";
+
 const App = () => {
-  const [forfeitModal, setForfeitModal] = useState(false);
-  return <SafeAreaView style={{ flex: 1 }}></SafeAreaView>;
+  const width = 256;
+  const height = 256;
+  const r = width * 0.33;
+  return (
+    <Canvas style={{ width, height }}>
+      <Group blendMode="multiply">
+        <Circle cx={r} cy={r} r={r} color="cyan" />
+        <Circle cx={width - r} cy={r} r={r} color="magenta" />
+        <Circle cx={width / 2} cy={width - r} r={r} color="yellow" />
+      </Group>
+    </Canvas>
+  );
 };
 
 export default App;

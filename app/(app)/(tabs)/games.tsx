@@ -20,7 +20,8 @@ import {
 } from '@/components/ui/actionsheet';
 import { HStack } from '@/components/ui/hstack';
 import { Button, ButtonText } from '@/components/ui/button';
-
+import HorizontalWheelPicker from '@/components/HorizontalWheelPicker';
+import HorizontalPicker from '@vseslav/react-native-horizontal-picker';
 export default function GamesScreen() {
   const [showSheet, setShowSheet] = useState(false);
   const [game, setGame] = useState<any>(null);
@@ -84,26 +85,46 @@ export default function GamesScreen() {
                 Game Options
               </Text>
               {/* <WheelPicker data={amounts} value={amount} onValueChanged={({ item: { value } }) => setAmount(value)} enableScrollByTapOnItem={true} /> */}
+              <HorizontalWheelPicker
+                data={['5', '10', '20', '50', '100', '500', '1000']}
+                initialIndex={0}
+                onChange={(i) => console.log('selected index', i)}
+              />
+
+              <Text bold>Players</Text>
               <HStack space="sm" className="flex flex-row">
-                <Button
-                  className="h-12 flex-1"
+                <Pressable
                   onPress={() => {
                     setMaxPlayers(2);
                   }}
+                  className="flex-1"
                 >
-                  <ButtonText>2</ButtonText>
-                </Button>
-                <Button
-                  className="h-12 flex-1"
+                  <Box
+                    className="h-12 w-full rounded-md flex items-center justify-center border "
+                    style={{ borderColor: maxPlayers === 2 ? '#16a34a' : 'white' }}
+                  >
+                    <Text bold style={{ color: maxPlayers === 2 ? '#16a34a' : 'white' }}>
+                      2
+                    </Text>
+                  </Box>
+                </Pressable>
+                <Pressable
                   onPress={() => {
                     setMaxPlayers(4);
                   }}
+                  className="flex-1"
                 >
-                  <ButtonText>4</ButtonText>
-                </Button>
+                  <Box
+                    className="h-12 w-full rounded-md flex items-center justify-center border "
+                    style={{ borderColor: maxPlayers === 4 ? '#16a34a' : 'white' }}
+                  >
+                    <Text bold style={{ color: maxPlayers === 4 ? '#16a34a' : 'white' }}>
+                      4
+                    </Text>
+                  </Box>
+                </Pressable>
               </HStack>
-              <Button
-                className="h-12 w-full"
+              <Pressable
                 onPress={() => {
                   // handleClose();
                   // if (user!.coins < Number(amount)) {
@@ -113,8 +134,10 @@ export default function GamesScreen() {
                   // }
                 }}
               >
-                <ButtonText>Play Now</ButtonText>
-              </Button>
+                <Box className="h-12 w-full bg-green-600 rounded-md flex items-center justify-center">
+                  <Text bold>Play Now</Text>
+                </Box>
+              </Pressable>
             </VStack>
           )}
         </ActionsheetContent>

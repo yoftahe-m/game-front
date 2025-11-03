@@ -48,7 +48,17 @@ export const transactionApi = createApi({
         };
       },
     }),
+
+    shareMoney: builder.mutation({
+      query: ({ data }) => {
+        return {
+          url: `transaction/share`,
+          method: 'POST',
+          body: data,
+        };
+      },
+    }),
   }),
 });
 
-export const { useGetTransactionHistoryQuery, useGetLeaderboardQuery } = transactionApi;
+export const { useGetTransactionHistoryQuery, useGetLeaderboardQuery ,useShareMoneyMutation} = transactionApi;
