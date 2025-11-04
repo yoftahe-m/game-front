@@ -38,6 +38,9 @@ import Money from '@/assets/icons/Money';
 import Joystick from '@/assets/icons/Controller';
 import Die from '@/assets/icons/Die';
 import Coin from '@/assets/icons/Coin';
+import { GradientButton } from '@/components/Buttons';
+import { Switch } from '@/components/ui/switch';
+import { setSound, toggleSound } from '@/store/slice/settings';
 type FormData = {
   full_name: string;
   phone: string;
@@ -46,10 +49,12 @@ type FormData = {
 export default function FullScreenRadialGradientWithContent() {
   const dispatch = useDispatch();
   const [showModal, setShowModal] = useState(false);
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
   const [showSupportModal, setShowSupportModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [image, setImage] = useState('');
   const user = useSelector((state: RootState) => state.user.data);
+  const soundEnabled = useSelector((state: RootState) => state.settings.soundEnabled);
   const insets = useSafeAreaInsets();
   const [changeProfile, { isLoading }] = useChangeProfileMutation();
   const {
@@ -205,7 +210,7 @@ export default function FullScreenRadialGradientWithContent() {
                   {/* <Box className="size-6 bg-amber-300 flex items-center justify-center rounded-full">
                     <FontAwesome5 name="coins" size={12} color="white" />
                   </Box> */}
-                  <Coin/>
+                  <Coin />
                   <Text className="h-6 px-2" bold>
                     {user?.rewards}
                   </Text>
@@ -219,7 +224,12 @@ export default function FullScreenRadialGradientWithContent() {
           <VStack className="justify-between flex-1 p-2 pb-16">
             <HStack className="justify-between flex-1 ">
               <VStack space="3xl" className="mt-5">
-                <ButtonIcon icon={<Gear />} onPress={() => {}} />
+                <ButtonIcon
+                  icon={<Gear />}
+                  onPress={() => {
+                    setShowSettingsModal(true);
+                  }}
+                />
                 <ButtonIcon
                   icon={<Support />}
                   onPress={() => {
@@ -255,12 +265,12 @@ export default function FullScreenRadialGradientWithContent() {
                 />
               </VStack>
             </HStack>
-            <VStack space="md" className="flex items-center w-[80%] mx-auto">
-              <View
-                style={{
+            <VStack space="md" className="flex items-center w-[80%] mx-auto ">
+              <GradientButton
+                colors={['#8f94fb', '#4e54c8']}
+                outerStyle={{
                   paddingBottom: 5,
                   paddingTop: 0,
-
                   borderRadius: 50,
                   backgroundColor: '#4046ad',
                   shadowColor: '#000',
@@ -269,88 +279,72 @@ export default function FullScreenRadialGradientWithContent() {
                   shadowOffset: { width: 0, height: 4 },
                   width: '100%',
                 }}
+                innerStyle={{
+                  height: 80,
+                  borderRadius: 50,
+                  borderWidth: 1,
+                  borderColor: '#c8ffc8',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+                onPress={() => router.push('/(app)/(tabs)/games')}
               >
-                <LinearGradient
-                  colors={['#8f94fb', '#4e54c8']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
+                <Text
                   style={{
-                    height: 80,
-                    // paddingVertical: 30,
-                    borderRadius: 50,
-                    borderWidth: 1,
-                    borderColor: '#c8ffc8',
-                    justifyContent: 'center',
-                    alignItems: 'center',
+                    color: 'white',
+                    fontWeight: '700',
+                    fontSize: 18,
+                    textShadowColor: 'rgba(0,0,0,0.4)',
+                    textShadowOffset: { width: 1, height: 2 },
+                    textShadowRadius: 3,
                   }}
                 >
-                  <HStack className="justify-center items-center">
-                    <Text
-                      style={{
-                        color: 'white',
-                        fontWeight: '700',
-                        fontSize: 18,
-                        textShadowColor: 'rgba(0,0,0,0.4)',
-                        textShadowOffset: { width: 1, height: 2 },
-                        textShadowRadius: 3,
-                      }}
-                    >
-                      Start a game
-                    </Text>
-                    <Box className=" flex items-center justify-center  w-[80px] overflow-hidden">
-                      <Die width={105} height={50} />
-                    </Box>
-                  </HStack>
-                </LinearGradient>
-              </View>
-              <Pressable onPress={() => router.push('/(app)/active')} className="w-full">
-                <View
+                  Start a game
+                </Text>
+                <Box className=" flex items-center justify-center  w-[80px] overflow-hidden">
+                  <Die width={105} height={50} />
+                </Box>
+              </GradientButton>
+
+              <GradientButton
+                colors={['#f953c6', '#b91d73']}
+                outerStyle={{
+                  paddingBottom: 5,
+                  paddingTop: 0,
+                  borderRadius: 50,
+                  backgroundColor: '#85265b',
+                  shadowColor: '#000',
+                  shadowOpacity: 0.5,
+                  shadowRadius: 8,
+                  shadowOffset: { width: 0, height: 4 },
+                  width: '100%',
+                }}
+                innerStyle={{
+                  height: 80,
+                  borderRadius: 50,
+                  borderWidth: 1,
+                  borderColor: '#c8ffc8',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                }}
+                onPress={() => router.push('/(app)/active')}
+              >
+                <Box className=" flex items-center justify-center  w-[80px] overflow-hidden">
+                  <Joystick width={120} height={75} />
+                </Box>
+                <Text
                   style={{
-                    paddingBottom: 5,
-                    paddingTop: 0,
-                    borderRadius: 50,
-                    backgroundColor: '#85265b',
-                    shadowColor: '#000',
-                    shadowOpacity: 0.5,
-                    shadowRadius: 8,
-                    shadowOffset: { width: 0, height: 4 },
-                    width: '100%',
+                    color: 'white',
+                    fontWeight: '700',
+                    fontSize: 18,
+                    textShadowColor: 'rgba(0,0,0,0.4)',
+                    textShadowOffset: { width: 1, height: 2 },
+                    textShadowRadius: 3,
                   }}
                 >
-                  <LinearGradient
-                    colors={['#f953c6', '#b91d73']}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 0, y: 1 }}
-                    style={{
-                      height: 80,
-                      // paddingVertical: 30,
-                      borderRadius: 50,
-                      borderWidth: 1,
-                      borderColor: '#c8ffc8',
-                      justifyContent: 'center',
-                      alignItems: 'center',
-                    }}
-                  >
-                    <HStack className="justify-center items-center">
-                      <Box className=" flex items-center justify-center  w-[80px] overflow-hidden">
-                        <Joystick width={120} height={75} />
-                      </Box>
-                      <Text
-                        style={{
-                          color: 'white',
-                          fontWeight: '700',
-                          fontSize: 18,
-                          textShadowColor: 'rgba(0,0,0,0.4)',
-                          textShadowOffset: { width: 1, height: 2 },
-                          textShadowRadius: 3,
-                        }}
-                      >
-                        Join a game
-                      </Text>
-                    </HStack>
-                  </LinearGradient>
-                </View>
-              </Pressable>
+                  Join a game
+                </Text>
+              </GradientButton>
 
               <Pressable onPress={() => router.push('/(app)/terms')}>
                 <Text>Terms and conditions</Text>
@@ -522,7 +516,7 @@ export default function FullScreenRadialGradientWithContent() {
               action="secondary"
               className="mr-3"
               onPress={() => {
-                setShowSupportModal(false);
+                setShowLogoutModal(false);
               }}
             >
               <ButtonText className="text-white">Cancel</ButtonText>
@@ -536,47 +530,84 @@ export default function FullScreenRadialGradientWithContent() {
           </ModalFooter>
         </ModalContent>
       </Modal>
+      <Modal
+        isOpen={showSettingsModal}
+        onClose={() => {
+          setShowSettingsModal(false);
+        }}
+        size="lg"
+      >
+        <ModalBackdrop />
+        <ModalContent className="bg-[#132e61] border-0 rounded-2xl">
+          <ModalHeader>
+            <Text size="lg" bold>
+              Settings
+            </Text>
+          </ModalHeader>
+          <ModalBody>
+            <HStack className="justify-between items-center px-2">
+              <Text bold>Sound Effect</Text>
+              <Switch
+                size="lg"
+                value={soundEnabled}
+                onValueChange={(v) => {
+                  dispatch(setSound(v));
+                }}
+                trackColor={{ false: '#d4d4d4', true: '#166534' }}
+                thumbColor="#fafafa"
+                // activeThumbColor="#fafafa"
+                ios_backgroundColor="#d4d4d4"
+              />
+            </HStack>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              variant="outline"
+              action="secondary"
+              className="mr-3"
+              onPress={() => {
+                setShowSettingsModal(false);
+              }}
+            >
+              <ButtonText className="text-white">Cancel</ButtonText>
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </>
   );
 }
 
 function ButtonIcon({ icon, onPress }: { icon: ReactNode; onPress: () => void }) {
   return (
-    <Pressable onPress={onPress} onPressIn={() => {}} onPressOut={() => {}}>
-      <Animated.View
-        style={{
-          padding: 5,
-          paddingTop: 0,
-          paddingLeft: 0,
-          paddingRight: 0,
-          borderRadius: 8,
-          backgroundColor: '#182970',
-          shadowColor: '#000',
-          shadowOpacity: 0.5,
-          shadowRadius: 8,
-          shadowOffset: { width: 0, height: 4 },
-          width: 50,
-          height: 50,
-          aspectRatio: 1,
-        }}
-      >
-        <LinearGradient
-          colors={['#004fde', '#1d3285']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 0, y: 1 }}
-          style={{
-            borderRadius: 8,
-            borderWidth: 1,
-            borderColor: '#4d5780',
-            justifyContent: 'center',
-            alignItems: 'center',
-            flex: 1,
-          }}
-        >
-          {icon}
-          {/* <Entypo name="chevron-with-circle-down" size={24} color="white" /> */}
-        </LinearGradient>
-      </Animated.View>
-    </Pressable>
+    <GradientButton
+      colors={['#004fde', '#1d3285']}
+      outerStyle={{
+        padding: 5,
+        paddingTop: 0,
+        paddingLeft: 0,
+        paddingRight: 0,
+        borderRadius: 8,
+        backgroundColor: '#182970',
+        shadowColor: '#000',
+        shadowOpacity: 0.5,
+        shadowRadius: 8,
+        shadowOffset: { width: 0, height: 4 },
+        width: 50,
+        height: 50,
+        aspectRatio: 1,
+      }}
+      innerStyle={{
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#4d5780',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flex: 1,
+      }}
+      onPress={onPress}
+    >
+      {icon}
+    </GradientButton>
   );
 }

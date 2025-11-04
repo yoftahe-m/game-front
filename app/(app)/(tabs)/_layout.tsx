@@ -121,12 +121,10 @@ function MyTabBar({ state, descriptors, navigation }) {
                 height,
                 borderTopLeftRadius: radius,
                 borderTopRightRadius: radius,
-                // backgroundColor: isFocused ? '#1d3285' : '#0e1f4d',
                 justifyContent: 'center',
                 alignItems: 'center',
                 borderWidth: 1,
                 borderBottomWidth: 0,
-                borderTopWidth: 0,
                 borderColor: isFocused ? '#113da6' : '#081939',
                 borderTopColor: '#113da6',
                 overflow:"hidden"
@@ -136,7 +134,6 @@ function MyTabBar({ state, descriptors, navigation }) {
               colors={isFocused ? ['#004fde', '#1d3285'] : ['#1d3285', '#0e1f4d']}
               start={{ x: 0, y: 0 }}
               end={{ x: 0, y: 1 }}
-              // style={{ borderTopLeftRadius: 10, borderTopRightRadius: 10 }}
               style={{width:"100%",height:"100%",alignItems:"center",justifyContent:"center"}}
             >
               {label === 'Home' && <Home width={isFocused ? 60 : 40} height={isFocused ? 60 : 40} />}

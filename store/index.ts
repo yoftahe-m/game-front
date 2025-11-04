@@ -7,6 +7,7 @@ import { adApi } from './service/ad';
 import userReducer from './slice/user';
 import orderReducer from './slice/order';
 import { userApi } from './service/user';
+import settingsReducer from './slice/settings';
 import { businessApi } from './service/business';
 import { transactionApi } from './service/transaction';
 import { restaurantApi } from './service/restaurant';
@@ -41,6 +42,7 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   user: userReducer,
+  settings: settingsReducer,
   order: orderReducer,
   [adApi.reducerPath]: adApi.reducer,
   [userApi.reducerPath]: userApi.reducer,

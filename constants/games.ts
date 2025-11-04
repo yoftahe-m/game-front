@@ -23,4 +23,11 @@ export default [
       'A popular board game for 2–4 players where each player races their tokens from start to finish based on dice rolls. The first to get all tokens home wins.',
     image: Crazy,
   },
+  {
+    id: 4,
+    title: 'Flappy',
+    description:
+      'A popular board game for 2–4 players where each player races their tokens from start to finish based on dice rolls. The first to get all tokens home wins.',
+    image: Crazy,
+  },
 ];

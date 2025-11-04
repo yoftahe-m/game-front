@@ -17,7 +17,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import baseQuery from '@/store/baseQuery';
 import { logout, setCredentials } from '@/store/slice/user';
-
+import { RootSiblingParent } from 'react-native-root-siblings';
 export {
   // Catch any errors thrown by the Layout component.
   ErrorBoundary,
@@ -50,31 +50,33 @@ function RootLayoutNav() {
   const colorScheme = useColorScheme();
 
   return (
-    <Provider store={store}>
-      <PersistGate loading={<ActivityIndicator size="large" />} persistor={persistor}>
-        <GestureHandlerRootView>
-          <GluestackUIProvider>
-            {/* <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}> */}
+    <RootSiblingParent>
+      <Provider store={store}>
+        <PersistGate loading={<ActivityIndicator size="large" />} persistor={persistor}>
+          <GestureHandlerRootView>
+            <GluestackUIProvider>
+              {/* <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}> */}
 
-            <AuthProvider>
-              {/* <Slot screenOptions={{ headerStyle: { backgroundColor: 'red' },}}/> */}
-              <Stack
-                screenOptions={{
-                  contentStyle: { backgroundColor: '#071843' },
-                }}
-              >
-                <Stack.Screen name="(app)" options={{ headerShown: false }} />
-                <Stack.Screen name="signin" options={{ headerShown: false }} />
-                <Stack.Screen name="signup" options={{ headerShown: false }} />
-              </Stack>
+              <AuthProvider>
+                {/* <Slot screenOptions={{ headerStyle: { backgroundColor: 'red' },}}/> */}
+                <Stack
+                  screenOptions={{
+                    contentStyle: { backgroundColor: '#071843' },
+                  }}
+                >
+                  <Stack.Screen name="(app)" options={{ headerShown: false }} />
+                  <Stack.Screen name="signin" options={{ headerShown: false }} />
+                  <Stack.Screen name="signup" options={{ headerShown: false }} />
+                </Stack>
 
-              <StatusBar style="light" />
-            </AuthProvider>
-            {/* </ThemeProvider> */}
-          </GluestackUIProvider>
-        </GestureHandlerRootView>
-      </PersistGate>
-    </Provider>
+                <StatusBar style="light" />
+              </AuthProvider>
+              {/* </ThemeProvider> */}
+            </GluestackUIProvider>
+          </GestureHandlerRootView>
+        </PersistGate>
+      </Provider>
+    </RootSiblingParent>
   );
 }
 

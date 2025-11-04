@@ -1,39 +1,29 @@
-import { Button, ButtonSpinner, ButtonText } from '@/components/ui/button';
-import { Center } from '@/components/ui/center';
-import {
-  FormControl,
-  FormControlError,
-  FormControlErrorIcon,
-  FormControlErrorText,
-  FormControlHelper,
-  FormControlHelperText,
-  FormControlLabel,
-  FormControlLabelText,
-} from '@/components/ui/form-control';
-import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
-import { Pressable } from '@/components/ui/pressable';
-import { Text } from '@/components/ui/text';
-import { VStack } from '@/components/ui/vstack';
-import React, { useState } from 'react';
-import { Image, ScrollView, useColorScheme } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { AlertCircleIcon } from '@/components/ui/icon'; // Assuming EyeIcon, EyeOffIcon, and AlertCircleIcon are available
-import { useForm, Controller } from 'react-hook-form'; // 👈 Import useForm and Controller
-import Feather from '@expo/vector-icons/Feather';
-import { useSigninMutation, useSignupMutation } from '@/store/service/user';
-import Toast from 'react-native-root-toast';
+import { useState } from 'react';
 import { router } from 'expo-router';
-import { signin } from '@/store/slice/user';
 import { useDispatch } from 'react-redux';
-// Define the shape of your form data
+import Toast from 'react-native-root-toast';
+import Feather from '@expo/vector-icons/Feather';
+import { useForm, Controller } from 'react-hook-form';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ActivityIndicator, Image, ScrollView } from 'react-native';
+
+import { Text } from '@/components/ui/text';
+import { signin } from '@/store/slice/user';
+import { Center } from '@/components/ui/center';
+import { HStack } from '@/components/ui/hstack';
+import { VStack } from '@/components/ui/vstack';
+import { Pressable } from '@/components/ui/pressable';
+import { useSigninMutation } from '@/store/service/user';
+import { Input, InputField, InputSlot } from '@/components/ui/input';
+import { FormControl, FormControlError, FormControlErrorText } from '@/components/ui/form-control';
+
 type FormData = {
   email: string;
   phone: string;
   password: string;
 };
 
-export default function SignupScreen() {
-  const colorScheme = useColorScheme();
+export default function SigninScreen() {
   const dispatch = useDispatch();
   const [login, { isLoading }] = useSigninMutation();
   const [showPassword, setShowPassword] = useState(false);
@@ -48,13 +38,10 @@ export default function SignupScreen() {
       phone: '',
       password: '123456',
     },
-    // Set 'all' to validate on blur, change, and submit
     mode: 'onBlur',
   });
 
-  // 👈 Function to handle successful form submission
   const onSubmit = async (data: FormData) => {
-    console.log('Sign in Data:', data);
 
     try {
       const result = await login({
@@ -63,8 +50,7 @@ export default function SignupScreen() {
       dispatch(signin(result));
       router.replace('/(app)/(tabs)');
     } catch (error) {
-      console.log('error', error);
-      Toast.show('Sign In failed.', {
+      Toast.show('Signing in failed.', {
         duration: Toast.durations.LONG,
       });
     }
@@ -74,13 +60,12 @@ export default function SignupScreen() {
     setShowPassword(!showPassword);
   };
 
-  // Helper function to check if a field has an error
   const isInvalid = (fieldName: keyof FormData) => !!errors[fieldName];
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 8 }}>
-        <VStack space="md">
+      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20 }}>
+        <VStack space="md" className="mt-20 flex-1">
           <Center>
             <Image
               source={{ uri: 'https://cdn-icons-png.flaticon.com/512/263/263142.png' }}
@@ -90,8 +75,8 @@ export default function SignupScreen() {
             />
           </Center>
           <Center>
-            <Text size="2xl" bold>
-              Login Here
+            <Text size="4xl" bold className="text-center">
+              Login into your account
             </Text>
           </Center>
           <Center>
@@ -110,9 +95,9 @@ export default function SignupScreen() {
             render={({ field: { onChange, onBlur, value } }) => (
               <FormControl isInvalid={isInvalid('email')}>
                 <VStack space="sm">
-                  <Text>Email</Text>
-                  <Input className="h-12 rounded-full">
-                    <InputSlot className="pl-3">
+                  <Text bold>Email</Text>
+                  <Input className="h-16 rounded-full" style={{ borderColor: 'white' }}>
+                    <InputSlot className="pl-5">
                       <Feather name="mail" size={16} color={'white'} />
                     </InputSlot>
                     <InputField
@@ -152,8 +137,8 @@ export default function SignupScreen() {
               <FormControl isInvalid={isInvalid('password')}>
                 <VStack space="sm">
                   <Text>Password</Text>
-                  <Input className="h-12 rounded-full">
-                    <InputSlot className="pl-3">
+                  <Input className="h-16 rounded-full " style={{ borderColor: 'white' }}>
+                    <InputSlot className="pl-5">
                       <Feather name="lock" size={16} color={'white'} />
                     </InputSlot>
                     <InputField
@@ -164,13 +149,12 @@ export default function SignupScreen() {
                       onBlur={onBlur}
                       className="text-white"
                     />
-                    <InputSlot className="pr-3" onPress={handleTogglePasswordVisibility}>
+                    <InputSlot className="pr-5" onPress={handleTogglePasswordVisibility}>
                       {showPassword ? <Feather name="eye" size={16} color={'white'} /> : <Feather name="eye-off" size={16} color={'white'} />}
                     </InputSlot>
                   </Input>
                 </VStack>
 
-                {/* Error and Helper Text */}
                 {isInvalid('password') && (
                   <FormControlError>
                     <Feather name="alert-circle" size={12} color={'red'} />
@@ -183,15 +167,17 @@ export default function SignupScreen() {
             )}
           />
 
-          <Button onPress={handleSubmit(onSubmit)} className="mt-6 bg-[#73d264] rounded-full h-12">
-            {isLoading && <ButtonSpinner color="gray" />}
-            <ButtonText size="xl">Sign In</ButtonText>
-          </Button>
+          <Pressable onPress={handleSubmit(onSubmit)} className="mt-6 bg-green-600 rounded-full h-16">
+            <HStack space="md" className="items-center justify-center  h-full">
+              {isLoading && <ActivityIndicator color="white" />}
+              <Text size="xl">Sign In</Text>
+            </HStack>
+          </Pressable>
 
           <Center className=" flex-row">
             <Text>Don't have an account? </Text>
             <Pressable onPress={() => router.replace('/signup')}>
-              <Text className="text-[#73d264]" bold>
+              <Text className="text-green-600" bold>
                 Sign Up
               </Text>
             </Pressable>

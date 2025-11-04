@@ -35,6 +35,9 @@ import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar'
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Input, InputField } from '@/components/ui/input';
+import { LinearGradient } from 'expo-linear-gradient';
+import Coin from '@/assets/icons/Coin';
+import Money from '@/assets/icons/Money';
 
 export default function TabOneScreen() {
   const socket = getSocket();
@@ -103,45 +106,54 @@ export default function TabOneScreen() {
   return (
     <View style={{ flex: 1 }}>
       <VStack className=" flex-1">
-        <HStack space="md" className="items-center justify-between px-2 bg-[#0c2665] pb-3" style={{ paddingTop: insets.top }}>
-          <HStack space="sm" className="items-center">
-            <Avatar size="md">
-              <AvatarFallbackText>{user?.fullName}</AvatarFallbackText>
-              <AvatarImage
-                source={{
-                  uri: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=687&q=80',
-                }}
-              />
-            </Avatar>
-
-            <Text bold>{user?.fullName.slice(0, 10)}</Text>
-          </HStack>
-          <HStack space="2xl">
-            <HStack className="items-center">
-              <Box className="size-6 bg-amber-300 flex items-center justify-center rounded-full">
-                <FontAwesome5 name="coins" size={12} color="white" />
-              </Box>
-              <Text className="h-6 px-2 " bold>
-                {user?.coins}
-              </Text>
-              <Pressable className="size-5 bg-green-600 flex items-center justify-center " onPress={() => router.push('/(app)/wallet')}>
-                <FontAwesome5 name="plus" size={12} color="white" />
+        <LinearGradient colors={['#0e1f4d', '#1d3285']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }}>
+          <HStack space="md" className="items-center justify-between px-2 pb-3 border-b border-[#113da6]" style={{ paddingTop: insets.top }}>
+            <HStack space="sm" className="items-center">
+              <Pressable>
+                <Avatar size="md" className="border border-white rounded-lg overflow-hidden">
+                  <AvatarFallbackText>{user?.fullName}</AvatarFallbackText>
+                  <AvatarImage
+                    source={{
+                      uri: user?.profilePic,
+                    }}
+                    className="rounded-none "
+                  />
+                </Avatar>
               </Pressable>
-            </HStack>
 
-            <HStack className="items-center">
-              <Box className="size-6 bg-amber-300 flex items-center justify-center rounded-full">
-                <FontAwesome5 name="coins" size={12} color="white" />
-              </Box>
-              <Text className="h-6 px-2" bold>
-                {user?.rewards}
-              </Text>
-              <Pressable className="size-5 bg-green-600 flex items-center justify-center" onPress={() => router.push('/(app)/referral')}>
-                <FontAwesome5 name="plus" size={12} color="white" />
-              </Pressable>
+              <VStack>
+                <Text bold>{user?.fullName?.slice(0, 10) ?? ''}</Text>
+                <Text size="xs" bold>
+                  {user?.phone?.slice(0, 10) ?? ''}
+                </Text>
+              </VStack>
+            </HStack>
+            <HStack space="2xl">
+              <HStack className="items-center relative">
+                <Money style={{ transform: [{ rotate: '120deg' }], marginBottom: 10 }} width={30} height={18} />
+                <Text className="h-6 px-2 border-y border-[#113da6] " bold>
+                  {user?.coins}
+                </Text>
+                <Pressable className="size-8 bg-green-600 flex items-center justify-center " onPress={() => router.push('/(app)/wallet')}>
+                  <FontAwesome5 name="plus" size={12} color="white" />
+                </Pressable>
+              </HStack>
+
+              <HStack className="items-center">
+                {/* <Box className="size-6 bg-amber-300 flex items-center justify-center rounded-full">
+                    <FontAwesome5 name="coins" size={12} color="white" />
+                  </Box> */}
+                <Coin />
+                <Text className="h-6 px-2" bold>
+                  {user?.rewards}
+                </Text>
+                <Pressable className="size-5 bg-green-600 flex items-center justify-center" onPress={() => router.push('/(app)/referral')}>
+                  <FontAwesome5 name="plus" size={12} color="white" />
+                </Pressable>
+              </HStack>
             </HStack>
           </HStack>
-        </HStack>
+        </LinearGradient>
 
         <VStack className=" flex-1 items-center p-2">
           <Box className=" rounded-3xl w-full flex-1 p-4 shadow-md" style={{ backgroundColor: '#1d3285' }}>

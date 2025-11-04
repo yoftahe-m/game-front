@@ -1,32 +1,22 @@
-import { Button } from '@/components/ui/button';
-import { Center } from '@/components/ui/center';
-import {
-  FormControl,
-  FormControlError,
-  FormControlErrorIcon,
-  FormControlErrorText,
-  FormControlHelper,
-  FormControlHelperText,
-  FormControlLabel,
-  FormControlLabelText,
-} from '@/components/ui/form-control';
-import { Input, InputField, InputIcon, InputSlot } from '@/components/ui/input';
-import { Pressable } from '@/components/ui/pressable';
-import { Text } from '@/components/ui/text';
-import { VStack } from '@/components/ui/vstack';
-import React, { useState } from 'react';
-import { Image, ScrollView } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { AlertCircleIcon } from '@/components/ui/icon'; // Assuming EyeIcon, EyeOffIcon, and AlertCircleIcon are available
-import { useForm, Controller } from 'react-hook-form'; // 👈 Import useForm and Controller
-import Feather from '@expo/vector-icons/Feather';
-import { red } from 'react-native-reanimated/lib/typescript/Colors';
-import { useSignupMutation } from '@/store/service/user';
-import { Toast, ToastDescription, ToastTitle, useToast } from '@/components/ui/toast';
+import { useState } from 'react';
 import { router } from 'expo-router';
-import { signin } from '@/store/slice/user';
 import { useDispatch } from 'react-redux';
-// Define the shape of your form data
+import Toast from 'react-native-root-toast';
+import Feather from '@expo/vector-icons/Feather';
+import { useForm, Controller } from 'react-hook-form';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ActivityIndicator, Image, ScrollView } from 'react-native';
+
+import { Text } from '@/components/ui/text';
+import { signin } from '@/store/slice/user';
+import { Center } from '@/components/ui/center';
+import { HStack } from '@/components/ui/hstack';
+import { VStack } from '@/components/ui/vstack';
+import { Pressable } from '@/components/ui/pressable';
+import { useSignupMutation } from '@/store/service/user';
+import { Input, InputField, InputSlot } from '@/components/ui/input';
+import { FormControl, FormControlError, FormControlErrorText } from '@/components/ui/form-control';
+
 type FormData = {
   full_name: string;
   email: string;
@@ -35,7 +25,6 @@ type FormData = {
 };
 
 export default function SignupScreen() {
-  const toast = useToast();
   const dispatch = useDispatch();
   const [signup, { isLoading }] = useSignupMutation();
   const [showPassword, setShowPassword] = useState(false);
@@ -51,23 +40,21 @@ export default function SignupScreen() {
       phone: '',
       password: '',
     },
-    // Set 'all' to validate on blur, change, and submit
     mode: 'onBlur',
   });
 
-  // 👈 Function to handle successful form submission
   const onSubmit = async (data: FormData) => {
-    console.log('Sign Up Data:', data);
     try {
       const result = await signup({
         data,
       }).unwrap();
 
-      console.log('result', result);
       dispatch(signin(result));
       router.replace('/(app)/(tabs)');
     } catch (error) {
-      console.log('error', error);
+      Toast.show('Signing up failed.', {
+        duration: Toast.durations.LONG,
+      });
     }
   };
 
@@ -75,65 +62,71 @@ export default function SignupScreen() {
     setShowPassword(!showPassword);
   };
 
-  // Helper function to check if a field has an error
   const isInvalid = (fieldName: keyof FormData) => !!errors[fieldName];
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <VStack className="p-5" space="md">
-          <Center className="py-8 my-5 rounded-xl shadow-lg">
+      <ScrollView contentContainerStyle={{ flexGrow: 1, paddingHorizontal: 20 }}>
+        <VStack space="md" className="mt-20 flex-1">
+          <Center>
             <Image
               source={{ uri: 'https://cdn-icons-png.flaticon.com/512/263/263142.png' }}
               style={{ width: 80, height: 80, tintColor: '#ff007f' }}
               resizeMode="contain"
-              alt='logo'
+              alt="logo"
             />
-            <Text className="text-xs text-gray-500 mt-[-20]">Lorem</Text>
           </Center>
-
-          <VStack className="mt-8">
-            {/* Name Field */}
-            <Controller
-              control={control}
-              name="full_name"
-              rules={{ required: 'Name is required' }} // 👈 Validation rule
-              render={({ field: { onChange, onBlur, value } }) => (
-                <FormControl isInvalid={isInvalid('full_name')} className="mb-4">
-                  <Text className="text-typography-500">Name</Text>
-                  <Input className="h-12">
-                    <InputSlot className="pl-3">
-                      <Feather name="user" size={16} color="black" />
+          <Center>
+            <Text size="4xl" bold className="text-center">
+              Create an account
+            </Text>
+          </Center>
+          <Center>
+            <Text size="md">We are glad to have you!</Text>
+          </Center>
+          <Controller
+            control={control}
+            name="full_name"
+            rules={{ required: 'Name is required' }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <FormControl isInvalid={isInvalid('full_name')}>
+                <VStack space="sm">
+                  <Text bold>Name</Text>
+                  <Input className="h-16 rounded-full" style={{ borderColor: 'white' }}>
+                    <InputSlot className="pl-5">
+                      <Feather name="user" size={16} color="whiteF" />
                     </InputSlot>
-                    <InputField placeholder="Name" value={value} onChangeText={onChange} onBlur={onBlur} className="text-base" />
+                    <InputField placeholder="Name" value={value} onChangeText={onChange} onBlur={onBlur} className="text-white" />
                   </Input>
-                  {isInvalid('full_name') && (
-                    <FormControlError className="mt-1">
-                      <Feather name="alert-circle" size={12} color={'red'} />
-                      <FormControlErrorText className="text-red-500 text-xs">{errors.full_name?.message}</FormControlErrorText>
-                    </FormControlError>
-                  )}
-                </FormControl>
-              )}
-            />
+                </VStack>
 
-            {/* Email Field */}
-            <Controller
-              control={control}
-              name="email"
-              rules={{
-                required: 'Email is required', // 👈 Validation rule
-                pattern: {
-                  value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i,
-                  message: 'Invalid email address',
-                },
-              }}
-              render={({ field: { onChange, onBlur, value } }) => (
-                <FormControl isInvalid={isInvalid('email')} className="mb-4">
-                  <Text className="text-typography-500">Email</Text>
-                  <Input className="h-12">
-                    <InputSlot className="pl-3">
-                      <Feather name="mail" size={16} color="black" />
+                {isInvalid('full_name') && (
+                  <FormControlError>
+                    <Feather name="alert-circle" size={12} color={'red'} />
+                    <FormControlErrorText className="text-red-500 text-xs">{errors.full_name?.message}</FormControlErrorText>
+                  </FormControlError>
+                )}
+              </FormControl>
+            )}
+          />
+
+          <Controller
+            control={control}
+            name="email"
+            rules={{
+              required: 'Email is required',
+              pattern: {
+                value: /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i,
+                message: 'Invalid email address',
+              },
+            }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <FormControl isInvalid={isInvalid('email')}>
+                <VStack space="sm">
+                  <Text bold>Email</Text>
+                  <Input className="h-16 rounded-full" style={{ borderColor: 'white' }}>
+                    <InputSlot className="pl-5">
+                      <Feather name="mail" size={16} color={'white'} />
                     </InputSlot>
                     <InputField
                       placeholder="Email"
@@ -141,30 +134,35 @@ export default function SignupScreen() {
                       value={value}
                       onChangeText={onChange}
                       onBlur={onBlur}
-                      className="text-base"
+                      className="text-white"
+                      autoCapitalize="none"
                     />
                   </Input>
-                  {isInvalid('email') && (
-                    <FormControlError className="mt-1">
-                      <Feather name="alert-circle" size={12} color={'red'} />
-                      <FormControlErrorText className="text-red-500 text-xs">{errors.email?.message}</FormControlErrorText>
-                    </FormControlError>
-                  )}
-                </FormControl>
-              )}
-            />
+                </VStack>
+                {isInvalid('email') && (
+                  <FormControlError>
+                    <Feather name="alert-circle" size={12} color={'red'} />
+                    <FormControlErrorText className="text-red-500 " size="xs">
+                      {errors.email?.message}
+                    </FormControlErrorText>
+                  </FormControlError>
+                )}
+              </FormControl>
+            )}
+          />
 
-            {/* Phone Field */}
-            <Controller
-              control={control}
-              name="phone"
-              rules={{ required: 'Phone number is required' }} // 👈 Validation rule
-              render={({ field: { onChange, onBlur, value } }) => (
-                <FormControl isInvalid={isInvalid('phone')} className="mb-4">
-                  <Text className="text-typography-500">Phone</Text>
-                  <Input className="h-12">
-                    <InputSlot className="pl-3">
-                      <Feather name="phone-call" size={16} color="black" />
+          {/* Phone Field */}
+          <Controller
+            control={control}
+            name="phone"
+            rules={{ required: 'Phone number is required' }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <FormControl isInvalid={isInvalid('phone')}>
+                <VStack space="sm">
+                  <Text bold>Phone</Text>
+                  <Input className="h-16 rounded-full" style={{ borderColor: 'white' }}>
+                    <InputSlot className="pl-5">
+                      <Feather name="phone-call" size={16} color="white" />
                     </InputSlot>
                     <InputField
                       placeholder="Phone number"
@@ -172,36 +170,38 @@ export default function SignupScreen() {
                       value={value}
                       onChangeText={onChange}
                       onBlur={onBlur}
-                      className="text-base"
+                      className="text-white"
                     />
                   </Input>
-                  {isInvalid('phone') && (
-                    <FormControlError className="mt-1">
-                      <Feather name="alert-circle" size={12} color={'red'} />
-                      <FormControlErrorText className="text-red-500 text-xs">{errors.phone?.message}</FormControlErrorText>
-                    </FormControlError>
-                  )}
-                </FormControl>
-              )}
-            />
+                </VStack>
 
-            {/* Password Field */}
-            <Controller
-              control={control}
-              name="password"
-              rules={{
-                required: 'Password is required', // 👈 Validation rule
-                minLength: {
-                  value: 6,
-                  message: 'Password must be at least 6 characters.',
-                },
-              }}
-              render={({ field: { onChange, onBlur, value } }) => (
-                <FormControl isInvalid={isInvalid('password')} className="mb-4">
-                  <Text className="text-typography-500">Password</Text>
-                  <Input className="h-12">
-                    <InputSlot className="pl-3">
-                      <Feather name="lock" size={16} color="black" />
+                {isInvalid('phone') && (
+                  <FormControlError>
+                    <Feather name="alert-circle" size={12} color={'red'} />
+                    <FormControlErrorText className="text-red-500 text-xs">{errors.phone?.message}</FormControlErrorText>
+                  </FormControlError>
+                )}
+              </FormControl>
+            )}
+          />
+
+          <Controller
+            control={control}
+            name="password"
+            rules={{
+              required: 'Password is required',
+              minLength: {
+                value: 6,
+                message: 'Password must be at least 6 characters.',
+              },
+            }}
+            render={({ field: { onChange, onBlur, value } }) => (
+              <FormControl isInvalid={isInvalid('password')}>
+                <VStack space="sm">
+                  <Text>Password</Text>
+                  <Input className="h-16 rounded-full " style={{ borderColor: 'white' }}>
+                    <InputSlot className="pl-5">
+                      <Feather name="lock" size={16} color={'white'} />
                     </InputSlot>
                     <InputField
                       placeholder="Password"
@@ -209,40 +209,41 @@ export default function SignupScreen() {
                       value={value}
                       onChangeText={onChange}
                       onBlur={onBlur}
-                      className="text-base "
+                      className="text-white"
                     />
-                    <InputSlot className="pr-3" onPress={handleTogglePasswordVisibility}>
-                      {showPassword ? <Feather name="eye" size={16} color="black" /> : <Feather name="eye-off" size={16} color="black" />}
+                    <InputSlot className="pr-5" onPress={handleTogglePasswordVisibility}>
+                      {showPassword ? <Feather name="eye" size={16} color={'white'} /> : <Feather name="eye-off" size={16} color={'white'} />}
                     </InputSlot>
                   </Input>
+                </VStack>
 
-                  {/* Error and Helper Text */}
-                  {isInvalid('password') && (
-                    <FormControlError className="mt-1">
-                      <Feather name="alert-circle" size={12} color={'red'} />
-                      <FormControlErrorText className="text-red-500 text-xs">{errors.password?.message}</FormControlErrorText>
-                    </FormControlError>
-                  )}
-                </FormControl>
-              )}
-            />
+                {isInvalid('password') && (
+                  <FormControlError>
+                    <Feather name="alert-circle" size={12} color={'red'} />
+                    <FormControlErrorText className="text-red-500" size="xs">
+                      {errors.password?.message}
+                    </FormControlErrorText>
+                  </FormControlError>
+                )}
+              </FormControl>
+            )}
+          />
 
-            {/* Sign Up Button */}
-            <Button
-              onPress={handleSubmit(onSubmit)} // 👈 Use handleSubmit from react-hook-form
-              className="mt-6 bg-[#4BC0D9] rounded-lg h-12"
-            >
-              <Text className="text-white text-lg font-bold">Sign Up</Text>
-            </Button>
+          <Pressable onPress={handleSubmit(onSubmit)} className="mt-6 bg-green-600 rounded-full h-16">
+            <HStack space="md" className="items-center justify-center  h-full">
+              {isLoading && <ActivityIndicator color="white" />}
+              <Text size="xl">Sign Up</Text>
+            </HStack>
+          </Pressable>
 
-            {/* Sign In Link */}
-            <Center className="mt-6 flex-row">
-              <Text className="text-base text-gray-600">Already have an account? </Text>
-              <Pressable onPress={() => console.log('Go to Sign In')}>
-                <Text className="text-[#4BC0D9] text-base font-semibold">Sign In</Text>
-              </Pressable>
-            </Center>
-          </VStack>
+          <Center className=" flex-row">
+            <Text>Already have an account? </Text>
+            <Pressable onPress={() => router.replace('/signin')}>
+              <Text className="text-green-600" bold>
+                Sign In
+              </Text>
+            </Pressable>
+          </Center>
         </VStack>
       </ScrollView>
     </SafeAreaView>

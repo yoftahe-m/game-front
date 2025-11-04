@@ -1,36 +1,52 @@
-import React, { useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useWindowDimensions, ScrollView, Pressable } from 'react-native';
-import { Grid, GridItem } from '@/components/ui/grid';
-import { Text } from '@/components/ui/text';
-import { Box } from '@/components/ui/box';
-import { Image } from '@/components/ui/image';
+import { useState } from 'react';
 import { router } from 'expo-router';
-import games from '@/constants/games';
-import { VStack } from '@/components/ui/vstack';
+import { useSelector } from 'react-redux';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useWindowDimensions, ScrollView } from 'react-native';
 
+import {
+  Select,
+  SelectItem,
+  SelectIcon,
+  SelectInput,
+  SelectPortal,
+  SelectTrigger,
+  SelectContent,
+  SelectBackdrop,
+  SelectDragIndicator,
+  SelectDragIndicatorWrapper,
+} from '@/components/ui/select';
 import {
   Actionsheet,
   ActionsheetContent,
-  ActionsheetItem,
-  ActionsheetItemText,
+  ActionsheetBackdrop,
   ActionsheetDragIndicator,
   ActionsheetDragIndicatorWrapper,
-  ActionsheetBackdrop,
 } from '@/components/ui/actionsheet';
+import { RootState } from '@/store';
+import games from '@/constants/games';
+import { Box } from '@/components/ui/box';
+import { Text } from '@/components/ui/text';
+import { Image } from '@/components/ui/image';
+import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
+import { Grid, GridItem } from '@/components/ui/grid';
+import { Pressable } from '@/components/ui/pressable';
+import { Modal, ModalBackdrop, ModalBody, ModalContent, ModalFooter, ModalHeader } from '@/components/ui/modal';
+
+import { ChevronDownIcon } from 'lucide-react-native';
+import { Entypo } from '@expo/vector-icons';
 import { Button, ButtonText } from '@/components/ui/button';
-import HorizontalWheelPicker from '@/components/HorizontalWheelPicker';
-import HorizontalPicker from '@vseslav/react-native-horizontal-picker';
 export default function GamesScreen() {
   const [showSheet, setShowSheet] = useState(false);
   const [game, setGame] = useState<any>(null);
   const { width } = useWindowDimensions();
   const [maxPlayers, setMaxPlayers] = useState(2);
-  const [amount, setAmount] = useState(5);
+  const [amount, setAmount] = useState('5');
   // Responsive column count (2 columns on small, 3+ on wide screens)
   const numColumns = width < 500 ? 2 : width < 900 ? 3 : 4;
-
+  const [depositModal, setDepositModal] = useState(false);
+  const user = useSelector((state: RootState) => state.user.data);
   return (
     <SafeAreaView style={{ flex: 1, paddingHorizontal: 8, paddingBottom: 20 }}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 16 }}>
@@ -84,54 +100,76 @@ export default function GamesScreen() {
               <Text size="lg" bold>
                 Game Options
               </Text>
-              {/* <WheelPicker data={amounts} value={amount} onValueChanged={({ item: { value } }) => setAmount(value)} enableScrollByTapOnItem={true} /> */}
-              <HorizontalWheelPicker
-                data={['5', '10', '20', '50', '100', '500', '1000']}
-                initialIndex={0}
-                onChange={(i) => console.log('selected index', i)}
-              />
+              <Text bold>Amount</Text>
+              <Select selectedValue={amount} onValueChange={(v) => setAmount(v)}>
+                <SelectTrigger variant="outline" size="md" className="h-12 justify-between ">
+                  <SelectInput placeholder="Select amount" className="text-white" />
+                  <Entypo name="chevron-small-down" size={24} color="white" />
+                </SelectTrigger>
+                <SelectPortal>
+                  <SelectBackdrop />
+                  <SelectContent style={{ paddingBottom: 20, backgroundColor: '#132e61', borderWidth: 0 }}>
+                    <SelectDragIndicatorWrapper>
+                      <SelectDragIndicator />
+                    </SelectDragIndicatorWrapper>
+                    {['5', '10', '20', '50', '100', '500', '1000'].map((item) => (
+                      <SelectItem
+                        key={item}
+                        label={item}
+                        value={item}
+                        className="bg-[#071843] items-center justify-center mb-2 rounded-md "
+                        textStyle={{ style: { color: 'white' } }}
+                      />
+                    ))}
+                  </SelectContent>
+                </SelectPortal>
+              </Select>
+              {game.title === 'Ludo' && (
+                <>
+                  <Text bold>Players</Text>
+                  <HStack space="sm" className="flex flex-row">
+                    <Pressable
+                      onPress={() => {
+                        setMaxPlayers(2);
+                      }}
+                      className="flex-1"
+                    >
+                      <Box
+                        className="h-12 w-full rounded-md flex items-center justify-center border "
+                        style={{ borderColor: maxPlayers === 2 ? '#16a34a' : 'white' }}
+                      >
+                        <Text bold style={{ color: maxPlayers === 2 ? '#16a34a' : 'white' }}>
+                          2
+                        </Text>
+                      </Box>
+                    </Pressable>
+                    <Pressable
+                      onPress={() => {
+                        setMaxPlayers(4);
+                      }}
+                      className="flex-1"
+                    >
+                      <Box
+                        className="h-12 w-full rounded-md flex items-center justify-center border "
+                        style={{ borderColor: maxPlayers === 4 ? '#16a34a' : 'white' }}
+                      >
+                        <Text bold style={{ color: maxPlayers === 4 ? '#16a34a' : 'white' }}>
+                          4
+                        </Text>
+                      </Box>
+                    </Pressable>
+                  </HStack>
+                </>
+              )}
 
-              <Text bold>Players</Text>
-              <HStack space="sm" className="flex flex-row">
-                <Pressable
-                  onPress={() => {
-                    setMaxPlayers(2);
-                  }}
-                  className="flex-1"
-                >
-                  <Box
-                    className="h-12 w-full rounded-md flex items-center justify-center border "
-                    style={{ borderColor: maxPlayers === 2 ? '#16a34a' : 'white' }}
-                  >
-                    <Text bold style={{ color: maxPlayers === 2 ? '#16a34a' : 'white' }}>
-                      2
-                    </Text>
-                  </Box>
-                </Pressable>
-                <Pressable
-                  onPress={() => {
-                    setMaxPlayers(4);
-                  }}
-                  className="flex-1"
-                >
-                  <Box
-                    className="h-12 w-full rounded-md flex items-center justify-center border "
-                    style={{ borderColor: maxPlayers === 4 ? '#16a34a' : 'white' }}
-                  >
-                    <Text bold style={{ color: maxPlayers === 4 ? '#16a34a' : 'white' }}>
-                      4
-                    </Text>
-                  </Box>
-                </Pressable>
-              </HStack>
               <Pressable
                 onPress={() => {
-                  // handleClose();
-                  // if (user!.coins < Number(amount)) {
-                  //   setDepositModal(true);
-                  // } else {
-                  //   router.push({ pathname: '/loading', params: { type: game?.title, maxPlayers: maxPlayers, amount: amount } });
-                  // }
+                  setShowSheet(false);
+                  if (user!.coins < Number(amount)) {
+                    setDepositModal(true);
+                  } else {
+                    router.push({ pathname: '/loading', params: { type: game?.title, maxPlayers: maxPlayers, amount: amount } });
+                  }
                 }}
               >
                 <Box className="h-12 w-full bg-green-600 rounded-md flex items-center justify-center">
@@ -142,6 +180,47 @@ export default function GamesScreen() {
           )}
         </ActionsheetContent>
       </Actionsheet>
+      <Modal
+        isOpen={depositModal}
+        onClose={() => {
+          setDepositModal(false);
+        }}
+        size="md"
+      >
+        <ModalBackdrop />
+        <ModalContent className="bg-[#071843] border-0">
+          <ModalHeader>
+            <Text size="xl" bold>
+              You don't have enough coins
+            </Text>
+          </ModalHeader>
+          <ModalBody>
+            <Text>Deposit more coin</Text>
+          </ModalBody>
+          <ModalFooter>
+            <Button
+              variant="outline"
+              action="secondary"
+              className="mr-3"
+              onPress={() => {
+                setDepositModal(false);
+              }}
+            >
+              <ButtonText>Cancel</ButtonText>
+            </Button>
+            <Button
+              onPress={() => {
+                router.push({ pathname: '/wallet' });
+                setDepositModal(false);
+              }}
+              className="bg-green-600"
+              style={{ backgroundColor: '#16a34a' }}
+            >
+              <ButtonText>Deposit</ButtonText>
+            </Button>
+          </ModalFooter>
+        </ModalContent>
+      </Modal>
     </SafeAreaView>
   );
 }
