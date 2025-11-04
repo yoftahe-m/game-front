@@ -168,10 +168,24 @@ export default function GamesScreen() {
                   if (user!.coins < Number(amount)) {
                     setDepositModal(true);
                   } else {
-                    router.push({ pathname: '/loading', params: { type: game?.title, maxPlayers: maxPlayers, amount: amount } });
+                    router.push({
+                      pathname: '/loading',
+                      params: {
+                        gameData: JSON.stringify({
+                          id: '1',
+                          type: game.title,
+                          status: 'waiting',
+                          options: {},
+                          maxPlayers: maxPlayers,
+                          amount: amount.toString(),
+                          players: [{ userId: user?.id, username: user?.fullName, picture: user?.profilePic, socketId: '1', status: 'active' }],
+                        }),
+                      },
+                    });
                   }
                 }}
               >
+                {/* type: game?.title, maxPlayers: maxPlayers, amount: amount */}
                 <Box className="h-12 w-full bg-green-600 rounded-md flex items-center justify-center">
                   <Text bold>Play Now</Text>
                 </Box>

@@ -54,7 +54,7 @@ export const userApi = createApi({
         };
       },
     }),
-    getLeaderboard: builder.query<User[], { name: string }>({
+    searchUser: builder.query<any[], { name: string }>({
       query: ({ name }) => {
         return {
           url: `user/search?name=${name}`,
@@ -64,4 +64,11 @@ export const userApi = createApi({
   }),
 });
 
-export const { useSignupMutation, useSigninMutation, useChangeNameMutation, useChangeProfilePicMutation, useChangeProfileMutation } = userApi;
+export const {
+  useSignupMutation,
+  useSigninMutation,
+  useChangeNameMutation,
+  useChangeProfilePicMutation,
+  useChangeProfileMutation,
+  useSearchUserQuery,
+} = userApi;

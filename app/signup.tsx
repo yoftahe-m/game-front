@@ -52,7 +52,7 @@ export default function SignupScreen() {
       dispatch(signin(result));
       router.replace('/(app)/(tabs)');
     } catch (error) {
-      Toast.show('Signing up failed.', {
+      Toast.show('Sign up failed.', {
         duration: Toast.durations.LONG,
       });
     }

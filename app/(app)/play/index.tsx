@@ -41,6 +41,7 @@ const PlayScreen = () => {
         return;
       }
 
+      console.log(parseGame.winner)
       if (!parseGame.winner) {
         e.preventDefault();
         setPendingAction(e.data.action);

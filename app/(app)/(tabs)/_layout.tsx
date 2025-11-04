@@ -17,6 +17,7 @@ export default function TabLayout() {
         tabBarActiveTintColor: '#fbbf24',
         tabBarInactiveTintColor: 'white',
       }}
+      
     >
       <Tabs.Screen
         name="leaderboard"

@@ -285,7 +285,15 @@ export default function TabOneScreen() {
             </Button>
             <Button
               onPress={() => {
-                router.push({ pathname: '/loading', params: { gameId: selectedGameId } });
+                const game = activeGames.find((g) => g.id === selectedGameId);
+                game?.players.push({ userId: user?.id, username: user?.fullName, picture: user?.profilePic, socketId: '1', status: 'active' });
+                router.push({
+                  pathname: '/loading',
+                  params: {
+                    gameData: JSON.stringify(game),
+                    gameId: selectedGameId,
+                  },
+                });
                 setSelectedGameId('');
               }}
               className="bg-green-600"

@@ -11,11 +11,13 @@ import { HStack } from '@/components/ui/hstack';
 import { Avatar, AvatarFallbackText, AvatarImage, AvatarBadge } from '@/components/ui/avatar';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store';
+import Money from '@/assets/icons/Money';
+import { Feather } from '@expo/vector-icons';
 
 export default function LoadingScreen() {
   const socket = getSocket();
-  const { type, maxPlayers, amount, gameId } = useLocalSearchParams();
-  const [game, setGame] = useState<{ id: string; type: string; amount: string; maxPlayers: number; players: any[] }>();
+  const { gameData, gameId } = useLocalSearchParams();
+  const [game, setGame] = useState<{ id: string; type: string; amount: string; maxPlayers: number; players: any[] }>(JSON.parse(gameData as string));
   const user = useSelector((state: RootState) => state.user.data);
 
   function leaveGame() {
@@ -49,9 +51,9 @@ export default function LoadingScreen() {
         userId: user!.id,
         username: user!.fullName,
         picture: user!.profilePic,
-        type,
+        type: game.type,
         options: {},
-        amount,
+        amount: game.amount,
       });
     }
   }, []);
@@ -80,43 +82,58 @@ export default function LoadingScreen() {
 
   return (
     <SafeAreaView style={{ flex: 1, paddingHorizontal: 8 }}>
-      <VStack space="md">
-        <Spinner size="large" />
-        <Text size="xl" bold className="text-center">
-          {game?.type}
-        </Text>
-        <Box className="border w-full rounded-2xl overflow-hidden">
-          <Box className="flex flex-row justify-between items-center p-4 border-b">
-            <Text>
-              {game?.players.length || 0}/{game?.maxPlayers || 0} players
-            </Text>
-            <Text>
-              {Number(game?.amount || 0) * (game?.players.length || 0)} /{Number(game?.amount || 0) * Number(game?.maxPlayers || 0)} Game Coins
-            </Text>
-          </Box>
-          <FlatList
-            data={game?.players || []}
-            renderItem={({ item }) => (
-              <HStack space="md" className="items-center">
-                <Avatar size="md">
-                  <AvatarFallbackText>{item.username}</AvatarFallbackText>
-                  <AvatarImage
-                    source={{
-                      uri: item.username,
-                    }}
-                    alt="prof"
-                  />
-                </Avatar>
-                <Text size="lg" bold>
-                  {item.username}
-                </Text>
+      <VStack space="md" className="flex-1 p-2">
+        <VStack className=" flex-1 items-center ">
+          <Box className=" rounded-3xl w-full flex-1 p-4 shadow-md" style={{ backgroundColor: '#1d3285' }}>
+            <HStack className="justify-between items-center py-4 px-2F">
+              <Text size="xl" bold>
+                {game.type}
+              </Text>
+
+              <HStack space="md">
+                <HStack space="sm" className="items-center">
+                  <Text>
+                    {game?.players.length || 0}/{game?.maxPlayers || 0}
+                  </Text>
+                  <Feather name="users" size={16} color="white" />
+                </HStack>
+                <HStack space="sm" className="items-center">
+                  <Text>
+                    {Number(game?.amount || 0) * (game?.players.length || 0)} /{Number(game?.amount || 0) * Number(game?.maxPlayers || 0)}
+                  </Text>
+                  <Money height={16} width={26} />
+                </HStack>
               </HStack>
-            )}
-            showsVerticalScrollIndicator={false}
-            keyExtractor={(item) => String(item.userId)}
-            contentContainerStyle={{ gap: 10, padding: 4, height: 300 }}
-          />
-        </Box>
+            </HStack>
+
+            <FlatList
+              keyExtractor={(item, index) => index.toString()}
+              data={game.players}
+              renderItem={({ item }) => {
+                return (
+                  <HStack className=" items-center p-4 rounded-lg mb-2" space="md" style={{ backgroundColor: '#456bb0' }}>
+                    <Avatar size="md">
+                      <AvatarFallbackText>{item.username}</AvatarFallbackText>
+                      <AvatarImage
+                        source={{
+                          uri: item.picture,
+                        }}
+                        alt="prof"
+                      />
+                    </Avatar>
+                    <Text size="lg" bold>
+                      {item.username}
+                    </Text>
+                  </HStack>
+                );
+              }}
+            />
+          </Box>
+        </VStack>
+        <HStack className="items-center justify-center p-4 bg-green-600 rounded-lg" space="md">
+          <Spinner size="small" color={'white'} />
+          <Text bold>{game.players.length === game.maxPlayers ? 'Game is Starting' : 'Waiting for others to join the game.'}</Text>
+        </HStack>
       </VStack>
     </SafeAreaView>
   );

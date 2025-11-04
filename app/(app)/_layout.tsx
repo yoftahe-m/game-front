@@ -21,7 +21,6 @@ export default function AppLayout() {
       }}
     >
       <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-      <Stack.Screen name="tic-tac-toe" options={{ headerShown: false }} />
     </Stack>
   );
 }
