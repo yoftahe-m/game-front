@@ -22,6 +22,7 @@ import TicTacToe from './_components/tic-tac-toe';
 import { Pressable } from '@/components/ui/pressable';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Modal, ModalBackdrop, ModalBody, ModalContent, ModalFooter, ModalHeader } from '@/components/ui/modal';
+import Checkers from './_components/checkers';
 
 const PlayScreen = () => {
   const socket = getSocket();
@@ -80,6 +81,9 @@ const PlayScreen = () => {
         break;
       case 'Ludo':
         return <Ludo />;
+        break;
+      case 'Checkers':
+        return <Checkers />;
         break;
 
       default:

@@ -6,7 +6,7 @@ import type { RootState } from './index';
 import { setCredentials, logout } from './slice/user';
 
 export const baseQuery = fetchBaseQuery({
-  baseUrl: 'http://192.168.94.60:8100/api/',
+  baseUrl: 'http://192.168.250.60:8100/api/',
   credentials: 'include',
   prepareHeaders: (headers, { getState }) => {
     const token = (getState() as RootState).user.accessToken;

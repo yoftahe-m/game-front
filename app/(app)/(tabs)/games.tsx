@@ -48,12 +48,12 @@ export default function GamesScreen() {
   const [depositModal, setDepositModal] = useState(false);
   const user = useSelector((state: RootState) => state.user.data);
   return (
-    <SafeAreaView style={{ flex: 1, paddingHorizontal: 8, paddingBottom: 20 }}>
+    <SafeAreaView style={{ flex: 1, paddingHorizontal: 8,  }}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 16 }}>
         <Text size="xl" bold className="py-4">
           All Games
         </Text>
-        <Grid className="gap-4" _extra={{ className: `grid-cols-${numColumns}` }}>
+        <Grid className="gap-4" _extra={{ className: `grid-cols-${numColumns}` }} style={{paddingBottom:20}}>
           {games.map((game) => (
             <GridItem key={game.id} className="bg-[#0c2665]  rounded-lg shadow-sm overflow-hidden" _extra={{ className: 'col-span-1' }}>
               <Pressable
