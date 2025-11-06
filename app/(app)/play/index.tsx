@@ -23,6 +23,7 @@ import { Pressable } from '@/components/ui/pressable';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Modal, ModalBackdrop, ModalBody, ModalContent, ModalFooter, ModalHeader } from '@/components/ui/modal';
 import Checkers from './_components/checkers';
+import Chess from './_components/chess';
 
 const PlayScreen = () => {
   const socket = getSocket();
@@ -84,6 +85,9 @@ const PlayScreen = () => {
         break;
       case 'Checkers':
         return <Checkers />;
+        break;
+      case 'Chess':
+        return <Chess />;
         break;
 
       default:

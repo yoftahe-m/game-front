@@ -13,12 +13,12 @@ import { Grid, GridItem } from '@/components/ui/grid';
 import { Pressable } from '@/components/ui/pressable';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 
-const Checkers = () => {
+const Chess = () => {
   const socket = getSocket();
   const { game } = useLocalSearchParams<{ game: string }>();
 
   const user = useSelector((state: RootState) => state.user.data);
-  const [from, setFrom] = useState<{ x: number; y: number } | null>(null);
+  const [from, setFrom] = useState('');
   const [playingGame, setPlayingGame] = useState(JSON.parse(game));
 
   useEffect(() => {
@@ -32,18 +32,15 @@ const Checkers = () => {
     };
   }, []);
 
-  function handlePress(x: number, y: number) {
-    const piece = playingGame.options.board[y][x];
-    const playerColor = playingGame.options.players.find((p) => p.userId === playingGame.options.turn).color;
-
-    if (piece && piece.color === playerColor) {
-      setFrom({ x, y });
-    } else if (from) {
+  const handleSquareClick = (x: number, y: number) => {
+    const square = 'abcdefgh'[x] + (8 - y);
+    if (!from) setFrom(square);
+    else {
       if (!socket) return;
-      socket.emit('checkers:move', { gameId: playingGame.id, from, to: { x, y } });
-      setFrom(null);
+      socket.emit('chess:move', { gameId: playingGame.id, from: from, to: square });
+      setFrom('');
     }
-  }
+  };
 
   return (
     <VStack className=" w-full" space="md">
@@ -81,7 +78,7 @@ const Checkers = () => {
       </HStack>
       <Grid _extra={{ className: 'grid-cols-8 ' }}>
         {playingGame.options.board.map((row, y: number) =>
-          row.map((cell, x: number) => (
+          row.map((piece, x: number) => (
             <GridItem
               key={`${x}-${y}`}
               style={{
@@ -90,28 +87,32 @@ const Checkers = () => {
               }}
               _extra={{ className: 'col-span-1' }}
             >
-              <Pressable onPress={() => handlePress(x, y)}>
+              <Pressable
+                onPress={() => {
+                  handleSquareClick(x, y);
+                }}
+              >
                 <Box
                   className=" w-full aspect-square"
                   style={{
                     aspectRatio: 1,
-                    backgroundColor: from?.x === x && from?.y === y ? '#f0c803' : 'transparent',
+                    backgroundColor: from === piece?.square ? '#f0c803' : 'transparent',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
                   }}
                 >
-                  {cell && (
+                  {piece && (
                     <Box
                       className=" size-8 rounded-full"
                       style={{
-                        backgroundColor: cell.color,
+                        backgroundColor: piece.color === 'w' ? 'white' : 'black',
                         display: 'flex',
                         alignItems: 'center',
                         justifyContent: 'center',
                       }}
                     >
-                      {cell.king && <FontAwesome5 name="crown" size={12} color="gold" />}
+                      <Text style={{ color: piece.color === 'w' ? 'black' : 'white' }}>{piece.type}</Text>
                     </Box>
                   )}
                 </Box>
@@ -124,4 +125,4 @@ const Checkers = () => {
   );
 };
 
-export default Checkers;
+export default Chess;

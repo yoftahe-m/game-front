@@ -581,14 +581,14 @@ export default function FullScreenRadialGradientWithContent() {
 function ButtonIcon({ icon, onPress }: { icon: ReactNode; onPress: () => void }) {
   return (
     <GradientButton
-      colors={['#004fde', '#1d3285']}
+      colors={['#8f94fb', '#4e54c8']}
       outerStyle={{
         padding: 5,
         paddingTop: 0,
         paddingLeft: 0,
         paddingRight: 0,
-        borderRadius: 8,
-        backgroundColor: '#182970',
+        borderRadius: 12,
+        backgroundColor: '#4046ad',
         shadowColor: '#000',
         shadowOpacity: 0.5,
         shadowRadius: 8,
@@ -598,9 +598,9 @@ function ButtonIcon({ icon, onPress }: { icon: ReactNode; onPress: () => void })
         aspectRatio: 1,
       }}
       innerStyle={{
-        borderRadius: 8,
+        borderRadius: 12,
         borderWidth: 1,
-        borderColor: '#4d5780',
+        borderColor: 'white',
         justifyContent: 'center',
         alignItems: 'center',
         flex: 1,

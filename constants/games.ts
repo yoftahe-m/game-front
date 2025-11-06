@@ -1,7 +1,10 @@
-import TicTacToe from '@/assets/images/tic-tac-toe.png';
 import Ludo from '@/assets/images/ludo.png';
 import Crazy from '@/assets/images/crazy.png';
+import Chess from '@/assets/images/chess.png';
+import Flappy from '@/assets/images/flappy.png';
 import Checkers from '@/assets/images/checkers.png';
+import TicTacToe from '@/assets/images/tic-tac-toe.png';
+
 export default [
   {
     id: 1,
@@ -29,7 +32,7 @@ export default [
     title: 'Flappy',
     description:
       'A popular board game for 2–4 players where each player races their tokens from start to finish based on dice rolls. The first to get all tokens home wins.',
-    image: Crazy,
+    image: Flappy,
   },
   {
     id: 5,
@@ -37,5 +40,12 @@ export default [
     description:
       'A popular board game for 2–4 players where each player races their tokens from start to finish based on dice rolls. The first to get all tokens home wins.',
     image: Checkers,
+  },
+  {
+    id: 6,
+    title: 'Chess',
+    description:
+      'A popular board game for 2–4 players where each player races their tokens from start to finish based on dice rolls. The first to get all tokens home wins.',
+    image: Chess,
   },
 ];
