@@ -20,7 +20,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { useSearchUserQuery } from '@/store/service/user';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import Toast from 'react-native-root-toast';
-import { setCoins } from '@/store/slice/user';
+import { updateCoins } from '@/store/slice/user';
 
 export default function WalletScreen() {
   const dispatch = useDispatch();
@@ -60,7 +60,7 @@ export default function WalletScreen() {
       await share({
         data: { amount, personId: userId },
       }).unwrap();
-      dispatch(setCoins({ amount: Number(-amount!) }));
+      dispatch(updateCoins({ amount: Number(-amount!) }));
       setShareModal(false);
     } catch (error) {
       Toast.show('Failed to share money.', {

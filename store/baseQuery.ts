@@ -1,9 +1,9 @@
-import type { FetchArgs, BaseQueryFn, FetchBaseQueryError } from '@reduxjs/toolkit/query';
 import { fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import type { FetchArgs, BaseQueryFn, FetchBaseQueryError } from '@reduxjs/toolkit/query';
 
 import { getSocket } from '@/socket';
 import type { RootState } from './index';
-import { setCredentials, logout } from './slice/user';
+import { setCredentials, logout, setCoins } from './slice/user';
 
 export const baseQuery = fetchBaseQuery({
   baseUrl: 'http://192.168.56.60:8100/api/',
@@ -28,6 +28,7 @@ const baseQueryWithReAuth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
       const data = refreshResponse.data as {
         accessToken: string;
         refreshToken: string;
+        coins: number;
       } | null;
 
       if (data) {
@@ -35,6 +36,11 @@ const baseQueryWithReAuth: BaseQueryFn<string | FetchArgs, unknown, FetchBaseQue
           setCredentials({
             accessToken: data.accessToken,
             refreshToken: data.refreshToken,
+          })
+        );
+        api.dispatch(
+          setCoins({
+            coins: data.coins,
           })
         );
         const socket = getSocket();

@@ -1,43 +1,26 @@
-import { Box } from '@/components/ui/box';
-
-import { FlatList, View } from 'react-native';
-
-import { SafeAreaView } from 'react-native-safe-area-context';
-
-import { Text } from '@/components/ui/text';
-
-import { Pressable } from '@/components/ui/pressable';
-
-import { Image } from '@/components/ui/image';
-
-import { HStack } from '@/components/ui/hstack';
-
-import { VStack } from '@/components/ui/vstack';
-
-import Feather from '@expo/vector-icons/Feather';
-
 import { router } from 'expo-router';
-
-import games from '@/constants/games';
-
-import { Modal, ModalBackdrop, ModalContent, ModalHeader, ModalCloseButton, ModalBody, ModalFooter } from '@/components/ui/modal';
-
-import { useEffect, useState } from 'react';
-
-import { Heading } from '@/components/ui/heading';
-
-import { Button, ButtonText } from '@/components/ui/button';
-import { getSocket } from '@/socket';
+import { FlatList } from 'react-native';
 import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
-import { CloseIcon, Icon } from '@/components/ui/icon';
-import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
+import { useEffect, useState } from 'react';
+import { LinearGradient } from 'expo-linear-gradient';
 import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Input, InputField } from '@/components/ui/input';
-import { LinearGradient } from 'expo-linear-gradient';
+
+import { RootState } from '@/store';
+import { getSocket } from '@/socket';
+import games from '@/constants/games';
 import Coin from '@/assets/icons/Coin';
 import Money from '@/assets/icons/Money';
+import { Box } from '@/components/ui/box';
+import { Text } from '@/components/ui/text';
+import { Image } from '@/components/ui/image';
+import { HStack } from '@/components/ui/hstack';
+import { VStack } from '@/components/ui/vstack';
+import { Pressable } from '@/components/ui/pressable';
+import { Input, InputField } from '@/components/ui/input';
+import { Button, ButtonText } from '@/components/ui/button';
+import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
+import { Modal, ModalBackdrop, ModalContent, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/modal';
 
 export default function TabOneScreen() {
   const socket = getSocket();
@@ -104,7 +87,7 @@ export default function TabOneScreen() {
 
   let selectedGame = activeGames.find((g) => g.id === selectedGameId);
   return (
-    <View style={{ flex: 1 }}>
+    <Box style={{ flex: 1 }}>
       <VStack className=" flex-1">
         <LinearGradient colors={['#0e1f4d', '#1d3285']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }}>
           <HStack space="md" className="items-center justify-between px-2 pb-3 border-b border-[#113da6]" style={{ paddingTop: insets.top }}>
@@ -140,9 +123,6 @@ export default function TabOneScreen() {
               </HStack>
 
               <HStack className="items-center">
-                {/* <Box className="size-6 bg-amber-300 flex items-center justify-center rounded-full">
-                    <FontAwesome5 name="coins" size={12} color="white" />
-                  </Box> */}
                 <Coin />
                 <Text className="h-6 px-2" bold>
                   {user?.rewards}
@@ -212,48 +192,12 @@ export default function TabOneScreen() {
                     >
                       <ButtonText>Join</ButtonText>
                     </Button>
-                    {/* <Text>{item.type}</Text> */}
-                    {/* <Text className="flex-1">{item.game ? item.game : item.type}</Text>
-                    <Text>
-                      {(item.type === 'Won' || item.type === 'Deposit') && '+'}
-                      {(item.type === 'Lost' || item.type === 'Withdraw') && '-'}
-                      {Math.abs(item.amount)}
-                    </Text>
-                    <Text className="flex-1  text-right">{new Date(item.created_at).toLocaleDateString()}</Text> */}
                   </HStack>
                 );
               }}
             />
           </Box>
         </VStack>
-        {/* 
-
-
-        <VStack className="m-2 mt-4 mb-0 flex-1 border-[3px] border-amber-600 rounded-3xl bg-amber-400">
-          <HStack className="justify-between items-center p-4 px-8">
-            <Text size="xl" bold>
-              Active Games
-            </Text>
-
-            <Input
-              variant="outline"
-              size="md"
-              isDisabled={false}
-              isInvalid={false}
-              isReadOnly={false}
-              className="h-8 w-40 rounded-full border-amber-200 bg-amber-200"
-            >
-              <InputField placeholder="Search" />
-            </Input>
-          </HStack>
-          <View className="flex-1 bg-amber-200 border-2 border-amber-500 m-2 mt-0  rounded-2xl overflow-hidden">
-            <FlatList
-              data={activeGames.filter((g) => g.players.length < g.maxPlayers)}
-              renderItem={renderItem}
-              contentContainerStyle={{ gap: 10, padding: 8 }}
-            />
-          </View>
-        </VStack> */}
       </VStack>
       <Modal
         isOpen={!!selectedGame}
@@ -343,6 +287,6 @@ export default function TabOneScreen() {
           </ModalFooter>
         </ModalContent>
       </Modal>
-    </View>
+    </Box>
   );
 }

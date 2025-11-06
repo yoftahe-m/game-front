@@ -1,9 +1,10 @@
 import { Stack } from 'expo-router';
-import { connectSocket, getSocket } from '@/socket';
 import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
 import { useEffect, useState } from 'react';
 import Toast from 'react-native-root-toast';
+
+import { RootState } from '@/store';
+import { connectSocket, getSocket } from '@/socket';
 
 export default function AppLayout() {
   const [socket, setSocket] = useState(getSocket());

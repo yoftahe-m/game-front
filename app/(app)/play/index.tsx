@@ -15,7 +15,7 @@ import Back from '@/assets/icons/Back';
 import Money from '@/assets/icons/Money';
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
-import { setCoins } from '@/store/slice/user';
+import { updateCoins } from '@/store/slice/user';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
 import TicTacToe from './_components/tic-tac-toe';
@@ -57,7 +57,7 @@ const PlayScreen = () => {
   const handleForfeit = () => {
     if (!socket) return;
     socket.emit('leaveGame', { gameId: parseGame.id });
-    dispatch(setCoins({ amount: Number(-parseGame.amount) }));
+    dispatch(updateCoins({ amount: Number(-parseGame.amount) }));
     setForfeitModal(false);
     if (pendingAction) navigation.dispatch(pendingAction);
   };

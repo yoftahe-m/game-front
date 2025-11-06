@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Box } from '@/components/ui/box';
-import { Spinner } from '@/components/ui/spinner';
-import { Text } from '@/components/ui/text';
-import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
-import { getSocket } from '@/socket';
-import { BackHandler, FlatList, ScrollView } from 'react-native';
-import { VStack } from '@/components/ui/vstack';
-import { HStack } from '@/components/ui/hstack';
-import { Avatar, AvatarFallbackText, AvatarImage, AvatarBadge } from '@/components/ui/avatar';
 import { useSelector } from 'react-redux';
-import { RootState } from '@/store';
-import Money from '@/assets/icons/Money';
 import { Feather } from '@expo/vector-icons';
+import { useCallback, useEffect, useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ActivityIndicator, BackHandler, FlatList } from 'react-native';
+import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
+
+import { RootState } from '@/store';
+import { getSocket } from '@/socket';
+import Money from '@/assets/icons/Money';
+import { Box } from '@/components/ui/box';
+import { Text } from '@/components/ui/text';
+import { HStack } from '@/components/ui/hstack';
+import { VStack } from '@/components/ui/vstack';
+import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 
 export default function LoadingScreen() {
   const socket = getSocket();
@@ -27,7 +27,7 @@ export default function LoadingScreen() {
   }
 
   useFocusEffect(
-    React.useCallback(() => {
+    useCallback(() => {
       const onBackPress = () => {
         leaveGame();
         return true; // prevent default back
@@ -107,7 +107,7 @@ export default function LoadingScreen() {
             </HStack>
 
             <FlatList
-              keyExtractor={(item, index) => index.toString()}
+              keyExtractor={(_, index) => index.toString()}
               data={game.players}
               renderItem={({ item }) => {
                 return (
@@ -118,7 +118,7 @@ export default function LoadingScreen() {
                         source={{
                           uri: item.picture,
                         }}
-                        alt="prof"
+                        alt="profile"
                       />
                     </Avatar>
                     <Text size="lg" bold>
@@ -131,7 +131,7 @@ export default function LoadingScreen() {
           </Box>
         </VStack>
         <HStack className="items-center justify-center p-4 bg-green-600 rounded-lg" space="md">
-          <Spinner size="small" color={'white'} />
+          <ActivityIndicator size="small" color={'white'} />
           <Text bold>{game.players.length === game.maxPlayers ? 'Game is Starting' : 'Waiting for others to join the game.'}</Text>
         </HStack>
       </VStack>

@@ -1,19 +1,18 @@
 import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
+import Svg, { Polygon } from 'react-native-svg';
 import { useLocalSearchParams } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Feather, FontAwesome, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 
 import { RootState } from '@/store';
 import { getSocket } from '@/socket';
+import { BOARD } from '@/constants/ludo';
+import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
 import { Pressable } from '@/components/ui/pressable';
-import { Feather, FontAwesome, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
-import { Box } from '@/components/ui/box';
-import { LinearGradient } from 'expo-linear-gradient';
-import { View } from 'react-native';
-import { BOARD } from '@/constants/ludo';
-import Svg, { Polygon } from 'react-native-svg';
 
 const Ludo = () => {
   const socket = getSocket();
@@ -79,9 +78,9 @@ const Ludo = () => {
       </HStack>
       <Box className=" rounded-xl overflow-hidden relative" style={{ aspectRatio: 1 }}>
         {BOARD.map((row, rowIndex) => (
-          <View key={rowIndex} className="flex flex-row flex-1">
+          <Box key={rowIndex} className="flex flex-row flex-1">
             {row.map((square, idx) => (
-              <View
+              <Box
                 key={idx}
                 style={{
                   flex: 1,
@@ -99,7 +98,7 @@ const Ludo = () => {
                   const isSingle = pinsAtSquare.length === 1;
 
                   return (
-                    <View
+                    <Box
                       style={{
                         width: 36, // fixed size box for wrapping
                         height: 36,
@@ -114,12 +113,12 @@ const Ludo = () => {
                           <MaterialCommunityIcons name="chess-pawn" size={isSingle ? 24 : 14} color={getColor(p.color, 500)} />
                         </Pressable>
                       ))}
-                    </View>
+                    </Box>
                   );
                 })()}
-              </View>
+              </Box>
             ))}
-          </View>
+          </Box>
         ))}
         <VStack className="absolute top-0 bottom-0 left-0 right-0 z-10">
           <Box className="w-full h-[40%]   flex flex-row">
@@ -267,7 +266,7 @@ export const ColorPanel = ({ color }: { color: ColorType }) => {
 
 function CenterPanel() {
   return (
-    <View
+    <Box
       style={{
         width: '20%',
         height: '100%',
@@ -289,6 +288,6 @@ function CenterPanel() {
         {/* Left Triangle (Red) */}
         <Polygon points="0,0 0,100 50,50" fill="#EA4335" />
       </Svg>
-    </View>
+    </Box>
   );
 }

@@ -43,9 +43,14 @@ const userSlice = createSlice({
       state.accessToken = action.payload.accessToken;
       state.refreshToken = action.payload.refreshToken;
     },
-    setCoins: (state, action: PayloadAction<{ amount: number }>) => {
+    updateCoins: (state, action: PayloadAction<{ amount: number }>) => {
       if (state.data) {
         state.data.coins += action.payload.amount;
+      }
+    },
+    setCoins: (state, action: PayloadAction<{ coins: number }>) => {
+      if (state.data) {
+        state.data.coins = action.payload.coins;
       }
     },
     setUser: (state, action: PayloadAction<{ user: User }>) => {
@@ -60,5 +65,5 @@ const userSlice = createSlice({
   },
 });
 
-export const { setCredentials, signin, logout, setUser,setCoins } = userSlice.actions;
+export const { setCredentials, signin, logout, setUser, updateCoins, setCoins } = userSlice.actions;
 export default userSlice.reducer;
