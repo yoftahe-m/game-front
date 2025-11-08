@@ -12,22 +12,28 @@ export default function AppLayout() {
 
   useEffect(() => {
     if (accessToken && !socket) {
-      connectSocket(accessToken);
-      setSocket(getSocket());
+      const newSocket = connectSocket(accessToken);
+      setSocket(newSocket);
     }
   }, [accessToken]);
 
   useEffect(() => {
     if (!socket) return;
-
-    socket.on('error', (message) => {
+    const errorHandler = (message: string) => {
       Toast.show(message, {
         duration: Toast.durations.LONG,
       });
-    });
-
+    };
+    socket.on('error', errorHandler);
+    const connectErrorHandler = () => {
+      Toast.show('Failed to connect to the server.', {
+        duration: Toast.durations.LONG,
+      });
+    };
+    socket.on('connect_error', connectErrorHandler);
     return () => {
-      socket?.off('error');
+      socket.off('error', errorHandler);
+      socket.off('connect_error', connectErrorHandler);
     };
   }, [socket]);
 

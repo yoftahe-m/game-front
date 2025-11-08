@@ -1,6 +1,5 @@
 import { useDispatch } from 'react-redux';
 import { useEffect, useState } from 'react';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import { Entypo, FontAwesome5 } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -12,18 +11,19 @@ import Ludo from './_components/ludo';
 import Star from '@/assets/icons/Star';
 import Draw from '@/assets/icons/Draw';
 import Back from '@/assets/icons/Back';
+import Chess from './_components/chess';
 import Money from '@/assets/icons/Money';
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
+import Checkers from './_components/checkers';
 import { updateCoins } from '@/store/slice/user';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
 import TicTacToe from './_components/tic-tac-toe';
 import { Pressable } from '@/components/ui/pressable';
+import { GradientButton } from '@/components/Buttons';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Modal, ModalBackdrop, ModalBody, ModalContent, ModalFooter, ModalHeader } from '@/components/ui/modal';
-import Checkers from './_components/checkers';
-import Chess from './_components/chess';
 
 const PlayScreen = () => {
   const socket = getSocket();
@@ -37,13 +37,13 @@ const PlayScreen = () => {
 
   const [parseGame, setParseGame] = useState<Game>(JSON.parse(game));
 
+  const { winner } = parseGame;
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (e) => {
       if (e.data.action.type === 'REPLACE' || e.data.action.type === 'RESET') {
         return;
       }
 
-      console.log(parseGame.winner)
       if (!parseGame.winner) {
         e.preventDefault();
         setPendingAction(e.data.action);
@@ -52,7 +52,7 @@ const PlayScreen = () => {
     });
 
     return unsubscribe;
-  }, [navigation]);
+  }, [navigation, winner]);
 
   const handleForfeit = () => {
     if (!socket) return;
@@ -95,6 +95,7 @@ const PlayScreen = () => {
         break;
     }
   }
+
 
   return (
     <>
@@ -197,52 +198,45 @@ const PlayScreen = () => {
             )}
           </ModalBody>
           <ModalFooter>
-            <Pressable onPress={() => router.back()} className="w-full">
-              <Box
-                style={{
-                  paddingBottom: 5,
-                  paddingTop: 0,
-
-                  borderRadius: 50,
-                  backgroundColor: '#c47b12',
-                  shadowColor: '#000',
-                  shadowOpacity: 0.5,
-                  shadowRadius: 8,
-                  shadowOffset: { width: 0, height: 4 },
-                  width: '100%',
-                }}
-              >
-                <LinearGradient
-                  colors={['#EDDE5D', '#F09819']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 0, y: 1 }}
+            <GradientButton
+              onPress={() => router.back()}
+              colors={['#EDDE5D', '#F09819']}
+              outerStyle={{
+                paddingBottom: 5,
+                paddingTop: 0,
+                borderRadius: 50,
+                backgroundColor: '#c47b12',
+                shadowColor: '#000',
+                shadowOpacity: 0.5,
+                shadowRadius: 8,
+                shadowOffset: { width: 0, height: 4 },
+                width: '100%',
+              }}
+              innerStyle={{
+                height: 50,
+                borderRadius: 50,
+                borderWidth: 1,
+                borderColor: '#c8ffc8',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+            >
+              <HStack space="md">
+                <Back />
+                <Text
+                  size="2xl"
                   style={{
-                    height: 50,
-                    borderRadius: 50,
-                    borderWidth: 1,
-                    borderColor: '#c8ffc8',
-                    justifyContent: 'center',
-                    alignItems: 'center',
+                    color: 'white',
+                    fontWeight: '700',
+                    textShadowColor: 'rgba(0,0,0,0.4)',
+                    textShadowOffset: { width: 1, height: 2 },
+                    textShadowRadius: 3,
                   }}
                 >
-                  <HStack space="md">
-                    <Back />
-                    <Text
-                      size="2xl"
-                      style={{
-                        color: 'white',
-                        fontWeight: '700',
-                        textShadowColor: 'rgba(0,0,0,0.4)',
-                        textShadowOffset: { width: 1, height: 2 },
-                        textShadowRadius: 3,
-                      }}
-                    >
-                      Go Back
-                    </Text>
-                  </HStack>
-                </LinearGradient>
-              </Box>
-            </Pressable>
+                  Go Back
+                </Text>
+              </HStack>
+            </GradientButton>
           </ModalFooter>
         </ModalContent>
       </Modal>

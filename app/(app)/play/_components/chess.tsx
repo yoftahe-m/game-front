@@ -1,11 +1,17 @@
 import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
+import { FontAwesome } from '@expo/vector-icons';
 import { useLocalSearchParams } from 'expo-router';
-import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 
 import { RootState } from '@/store';
 import { getSocket } from '@/socket';
+import Pawn from '@/assets/icons/Pawn';
+import Rock from '@/assets/icons/Rock';
+import King from '@/assets/icons/King';
+import Queen from '@/assets/icons/Queen';
 import { Box } from '@/components/ui/box';
+import Bishop from '@/assets/icons/Bishop';
+import Knight from '@/assets/icons/Knight';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
@@ -42,12 +48,38 @@ const Chess = () => {
     }
   };
 
+  function returnIcons(type: string, color: 'black' | 'white') {
+    switch (type) {
+      case 'p':
+        return <Pawn color={color} />;
+        break;
+      case 'k':
+        return <King color={color} />;
+        break;
+      case 'q':
+        return <Queen color={color} />;
+        break;
+      case 'n':
+        return <Knight color={color} />;
+        break;
+      case 'b':
+        return <Bishop color={color} />;
+        break;
+      case 'r':
+        return <Rock color={color} />;
+        break;
+
+      default:
+        return <Pawn color={color} />;
+        break;
+    }
+  }
   return (
     <VStack className=" w-full" space="md">
       <HStack className="justify-between">
-        <HStack space="md" className="items-center">
-          <VStack space="xs">
-            <Avatar size="md" className="border border-white rounded-lg overflow-hidden">
+        <VStack space="xs">
+          <HStack space="md" className="items-center">
+            <Avatar size="md" className="border border-white rounded-lg overflow-hidden ">
               <AvatarFallbackText>{playingGame.players[0].username}</AvatarFallbackText>
               <AvatarImage
                 source={{
@@ -56,13 +88,18 @@ const Chess = () => {
                 className="rounded-none"
               />
             </Avatar>
-            <Text>{playingGame.players[0].username}</Text>
-          </VStack>
-          {user?.id === playingGame.options.turn && <FontAwesome name={'arrow-left'} size={24} color="black" />}
-        </HStack>
-        <HStack space="md" className="items-center">
-          {user?.id === playingGame.options.turn && <FontAwesome name={'arrow-right'} size={24} color="black" />}
-          <VStack space="xs">
+            {playingGame.players[0].userId === playingGame.options.turn && (
+              <FontAwesome name={'arrow-left'} size={24} color={playingGame.options.turn === user?.id ? '#16a34a' : 'white'} />
+            )}
+          </HStack>
+          <Text bold>{playingGame.players[0].username}</Text>
+        </VStack>
+
+        <VStack space="xs" className="items-end">
+          <HStack space="md" className="items-center">
+            {playingGame.players[1].userId === playingGame.options.turn && (
+              <FontAwesome name={'arrow-right'} size={24} color={playingGame.options.turn === user?.id ? '#16a34a' : 'white'} />
+            )}
             <Avatar size="md" className="border border-white rounded-lg overflow-hidden">
               <AvatarFallbackText>{playingGame.players[1].username}</AvatarFallbackText>
               <AvatarImage
@@ -72,13 +109,16 @@ const Chess = () => {
                 className="rounded-none "
               />
             </Avatar>
-            <Text>{playingGame.players[1].username}</Text>
-          </VStack>
-        </HStack>
+          </HStack>
+          <Text bold>{playingGame.players[1].username}</Text>
+        </VStack>
       </HStack>
-      <Grid _extra={{ className: 'grid-cols-8 ' }}>
-        {playingGame.options.board.map((row, y: number) =>
-          row.map((piece, x: number) => (
+      <Grid
+        _extra={{ className: 'grid-cols-8 ' }}
+        style={{ transform: [{ rotate: user?.id === playingGame.players[1].userId ? '180deg' : '0deg' }] }}
+      >
+        {playingGame.options.board.map((row: any, y: number) =>
+          row.map((piece: any, x: number) => (
             <GridItem
               key={`${x}-${y}`}
               style={{
@@ -103,16 +143,8 @@ const Chess = () => {
                   }}
                 >
                   {piece && (
-                    <Box
-                      className=" size-8 rounded-full"
-                      style={{
-                        backgroundColor: piece.color === 'w' ? 'white' : 'black',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      <Text style={{ color: piece.color === 'w' ? 'black' : 'white' }}>{piece.type}</Text>
+                    <Box style={{ transform: [{ rotate: user?.id === playingGame.players[1].userId ? '180deg' : '0deg' }] }}>
+                      {returnIcons(piece.type, piece.color === 'w' ? 'black' : 'white')}
                     </Box>
                   )}
                 </Box>

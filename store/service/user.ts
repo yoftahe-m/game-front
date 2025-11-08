@@ -61,6 +61,13 @@ export const userApi = createApi({
         };
       },
     }),
+    getReferredUsers: builder.query<any, { page: number; size: number }>({
+      query: ({ page, size }) => {
+        return {
+          url: `user/referred?page=${page}&size=${size}`,
+        };
+      },
+    }),
   }),
 });
 
@@ -71,4 +78,5 @@ export const {
   useChangeProfilePicMutation,
   useChangeProfileMutation,
   useSearchUserQuery,
+  useGetReferredUsersQuery
 } = userApi;
