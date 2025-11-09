@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import React, { ReactNode, useRef, useState } from 'react';
-import { Dimensions, View, StyleSheet, Image, ActivityIndicator, Linking, Alert } from 'react-native';
+import React, { ReactNode, useCallback, useRef, useState } from 'react';
+import { Dimensions, View, StyleSheet, Image, ActivityIndicator, Linking, Alert, ScrollView, RefreshControl } from 'react-native';
 import Svg, { Defs, RadialGradient, Stop, Rect, G, Path, Pattern } from 'react-native-svg';
 import logo from '@/assets/images/logo.png';
 import { VStack } from '@/components/ui/vstack';
@@ -32,8 +32,8 @@ import { Animated } from 'react-native';
 import { Input, InputField, InputSlot } from '@/components/ui/input';
 import { Controller, useForm } from 'react-hook-form';
 import { FormControl, FormControlError, FormControlErrorText } from '@/components/ui/form-control';
-import { useChangeProfileMutation } from '@/store/service/user';
-import { logout, setUser } from '@/store/slice/user';
+import { useChangeProfileMutation, useRefreshCoinQuery } from '@/store/service/user';
+import { logout, setCoins, setUser } from '@/store/slice/user';
 import Money from '@/assets/icons/Money';
 import Joystick from '@/assets/icons/Controller';
 import Die from '@/assets/icons/Die';
@@ -153,6 +153,24 @@ export default function FullScreenRadialGradientWithContent() {
   const scale = 1; // increase size
   const hexWidth = 28;
   const hexHeight = 49;
+
+  const { data, refetch, isFetching } = useRefreshCoinQuery({});
+
+  const onRefresh = useCallback(() => {
+    refetch()
+      .unwrap() // unwrap returns a promise that either resolves with data or throws an error
+      .then((data) => {
+        console.log('first', data.coins);
+        setCoins({ coins: data.coins });
+      })
+      .catch((error) => {
+        console.log('error', error);
+        Toast.show('Failed to fetch data.', {
+          duration: Toast.durations.LONG,
+        });
+      });
+  }, [refetch]);
+
   return (
     <>
       <View style={{ flex: 1 }}>
@@ -221,136 +239,138 @@ export default function FullScreenRadialGradientWithContent() {
               </HStack>
             </HStack>
           </LinearGradient>
-          <VStack className="justify-between flex-1 p-2 pb-16">
-            <HStack className="justify-between flex-1 ">
-              <VStack space="3xl" className="mt-5">
-                <ButtonIcon
-                  icon={<Gear />}
-                  onPress={() => {
-                    setShowSettingsModal(true);
+          <ScrollView className='flex-1' refreshControl={<RefreshControl refreshing={isFetching} onRefresh={onRefresh} />}>
+            <VStack className="justify-between flex-1 p-2 pb-16">
+              <HStack className="justify-between flex-1 ">
+                <VStack space="3xl" className="mt-5">
+                  <ButtonIcon
+                    icon={<Gear />}
+                    onPress={() => {
+                      setShowSettingsModal(true);
+                    }}
+                  />
+                  <ButtonIcon
+                    icon={<Support />}
+                    onPress={() => {
+                      setShowSupportModal(true);
+                    }}
+                  />
+                  <ButtonIcon
+                    icon={<Logout />}
+                    onPress={() => {
+                      setShowLogoutModal(true);
+                    }}
+                  />
+                </VStack>
+                <Image source={logo} style={{ width: 200, height: 200, objectFit: 'contain' }} />
+                <VStack space="3xl" className="mt-5">
+                  <ButtonIcon
+                    icon={<Wheel />}
+                    onPress={() => {
+                      router.push('/(app)/coming-soon');
+                    }}
+                  />
+                  <ButtonIcon
+                    icon={<Gear />}
+                    onPress={() => {
+                      router.push('/(app)/coming-soon');
+                    }}
+                  />
+                  <ButtonIcon
+                    icon={<Gear />}
+                    onPress={() => {
+                      router.push('/(app)/coming-soon');
+                    }}
+                  />
+                </VStack>
+              </HStack>
+              <VStack space="md" className="flex items-center w-[80%] mx-auto ">
+                <GradientButton
+                  colors={['#8f94fb', '#4e54c8']}
+                  outerStyle={{
+                    paddingBottom: 5,
+                    paddingTop: 0,
+                    borderRadius: 50,
+                    backgroundColor: '#4046ad',
+                    shadowColor: '#000',
+                    shadowOpacity: 0.5,
+                    shadowRadius: 8,
+                    shadowOffset: { width: 0, height: 4 },
+                    width: '100%',
                   }}
-                />
-                <ButtonIcon
-                  icon={<Support />}
-                  onPress={() => {
-                    setShowSupportModal(true);
+                  innerStyle={{
+                    height: 80,
+                    borderRadius: 50,
+                    borderWidth: 1,
+                    borderColor: '#c8ffc8',
+                    justifyContent: 'center',
+                    alignItems: 'center',
                   }}
-                />
-                <ButtonIcon
-                  icon={<Logout />}
-                  onPress={() => {
-                    setShowLogoutModal(true);
-                  }}
-                />
-              </VStack>
-              <Image source={logo} style={{ width: 200, height: 200, objectFit: 'contain' }} />
-              <VStack space="3xl" className="mt-5">
-                <ButtonIcon
-                  icon={<Wheel />}
-                  onPress={() => {
-                    router.push('/(app)/coming-soon');
-                  }}
-                />
-                <ButtonIcon
-                  icon={<Gear />}
-                  onPress={() => {
-                    router.push('/(app)/coming-soon');
-                  }}
-                />
-                <ButtonIcon
-                  icon={<Gear />}
-                  onPress={() => {
-                    router.push('/(app)/coming-soon');
-                  }}
-                />
-              </VStack>
-            </HStack>
-            <VStack space="md" className="flex items-center w-[80%] mx-auto ">
-              <GradientButton
-                colors={['#8f94fb', '#4e54c8']}
-                outerStyle={{
-                  paddingBottom: 5,
-                  paddingTop: 0,
-                  borderRadius: 50,
-                  backgroundColor: '#4046ad',
-                  shadowColor: '#000',
-                  shadowOpacity: 0.5,
-                  shadowRadius: 8,
-                  shadowOffset: { width: 0, height: 4 },
-                  width: '100%',
-                }}
-                innerStyle={{
-                  height: 80,
-                  borderRadius: 50,
-                  borderWidth: 1,
-                  borderColor: '#c8ffc8',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-                onPress={() => router.push('/(app)/(tabs)/games')}
-              >
-                <Text
-                  style={{
-                    color: 'white',
-                    fontWeight: '700',
-                    fontSize: 18,
-                    textShadowColor: 'rgba(0,0,0,0.4)',
-                    textShadowOffset: { width: 1, height: 2 },
-                    textShadowRadius: 3,
-                  }}
+                  onPress={() => router.push('/(app)/(tabs)/games')}
                 >
-                  Start a game
-                </Text>
-                <Box className=" flex items-center justify-center  w-[80px] overflow-hidden">
-                  <Die width={105} height={50} />
-                </Box>
-              </GradientButton>
+                  <Text
+                    style={{
+                      color: 'white',
+                      fontWeight: '700',
+                      fontSize: 18,
+                      textShadowColor: 'rgba(0,0,0,0.4)',
+                      textShadowOffset: { width: 1, height: 2 },
+                      textShadowRadius: 3,
+                    }}
+                  >
+                    Start a game
+                  </Text>
+                  <Box className=" flex items-center justify-center  w-[80px] overflow-hidden">
+                    <Die width={105} height={50} />
+                  </Box>
+                </GradientButton>
 
-              <GradientButton
-                colors={['#f953c6', '#b91d73']}
-                outerStyle={{
-                  paddingBottom: 5,
-                  paddingTop: 0,
-                  borderRadius: 50,
-                  backgroundColor: '#85265b',
-                  shadowColor: '#000',
-                  shadowOpacity: 0.5,
-                  shadowRadius: 8,
-                  shadowOffset: { width: 0, height: 4 },
-                  width: '100%',
-                }}
-                innerStyle={{
-                  height: 80,
-                  borderRadius: 50,
-                  borderWidth: 1,
-                  borderColor: '#c8ffc8',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                }}
-                onPress={() => router.push('/(app)/active')}
-              >
-                <Box className=" flex items-center justify-center  w-[80px] overflow-hidden">
-                  <Joystick width={120} height={75} />
-                </Box>
-                <Text
-                  style={{
-                    color: 'white',
-                    fontWeight: '700',
-                    fontSize: 18,
-                    textShadowColor: 'rgba(0,0,0,0.4)',
-                    textShadowOffset: { width: 1, height: 2 },
-                    textShadowRadius: 3,
+                <GradientButton
+                  colors={['#f953c6', '#b91d73']}
+                  outerStyle={{
+                    paddingBottom: 5,
+                    paddingTop: 0,
+                    borderRadius: 50,
+                    backgroundColor: '#85265b',
+                    shadowColor: '#000',
+                    shadowOpacity: 0.5,
+                    shadowRadius: 8,
+                    shadowOffset: { width: 0, height: 4 },
+                    width: '100%',
                   }}
+                  innerStyle={{
+                    height: 80,
+                    borderRadius: 50,
+                    borderWidth: 1,
+                    borderColor: '#c8ffc8',
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                  onPress={() => router.push('/(app)/active')}
                 >
-                  Join a game
-                </Text>
-              </GradientButton>
+                  <Box className=" flex items-center justify-center  w-[80px] overflow-hidden">
+                    <Joystick width={120} height={75} />
+                  </Box>
+                  <Text
+                    style={{
+                      color: 'white',
+                      fontWeight: '700',
+                      fontSize: 18,
+                      textShadowColor: 'rgba(0,0,0,0.4)',
+                      textShadowOffset: { width: 1, height: 2 },
+                      textShadowRadius: 3,
+                    }}
+                  >
+                    Join a game
+                  </Text>
+                </GradientButton>
 
-              <Pressable onPress={() => router.push('/(app)/terms')}>
-                <Text>Terms and conditions</Text>
-              </Pressable>
+                <Pressable onPress={() => router.push('/(app)/terms')}>
+                  <Text>Terms and conditions</Text>
+                </Pressable>
+              </VStack>
             </VStack>
-          </VStack>
+          </ScrollView>
         </VStack>
       </View>
       <Modal

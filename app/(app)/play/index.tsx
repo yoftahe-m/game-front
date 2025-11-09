@@ -1,11 +1,13 @@
-import { useDispatch } from 'react-redux';
+import { useAudioPlayer } from 'expo-audio';
 import { useEffect, useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigation } from '@react-navigation/native';
 import { Entypo, FontAwesome5 } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Game } from '@/types/game';
+import { RootState } from '@/store';
 import { getSocket } from '@/socket';
 import Ludo from './_components/ludo';
 import Star from '@/assets/icons/Star';
@@ -17,6 +19,10 @@ import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import Checkers from './_components/checkers';
 import { updateCoins } from '@/store/slice/user';
+import LostSound from '@/assets/sounds/lost.mp3';
+import StartSound from '@/assets/sounds/start.mp3';
+import WonSound from '@/assets/sounds/won.mp3';
+import DrawSound from '@/assets/sounds/draw.mp3';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
 import TicTacToe from './_components/tic-tac-toe';
@@ -30,14 +36,24 @@ const PlayScreen = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
+  const WonPlayer = useAudioPlayer(WonSound);
+  const LostPlayer = useAudioPlayer(LostSound);
+  const DrawPlayer = useAudioPlayer(DrawSound);
+  const StartPlayer = useAudioPlayer(StartSound);
   const [gameModal, setGameModal] = useState(false);
   const [forfeitModal, setForfeitModal] = useState(false);
   const { game } = useLocalSearchParams<{ game: string }>();
   const [pendingAction, setPendingAction] = useState<any>(null);
-
   const [parseGame, setParseGame] = useState<Game>(JSON.parse(game));
+  const user = useSelector((state: RootState) => state.user.data);
 
   const { winner } = parseGame;
+
+  useEffect(() => {
+    StartPlayer.seekTo(0);
+    StartPlayer.play();
+  }, []);
+
   useEffect(() => {
     const unsubscribe = navigation.addListener('beforeRemove', (e) => {
       if (e.data.action.type === 'REPLACE' || e.data.action.type === 'RESET') {
@@ -66,6 +82,18 @@ const PlayScreen = () => {
     if (!socket) return;
     socket.on('gameOver', (game) => {
       setParseGame(game);
+
+      console.log(game.winner)
+      if (game.winner === user?.id) {
+        WonPlayer.seekTo(0);
+        WonPlayer.play();
+      } else if (game.winner === 'draw') {
+        DrawPlayer.seekTo(0);
+        DrawPlayer.play();
+      } else {
+        LostPlayer.seekTo(0);
+        LostPlayer.play();
+      }
 
       setGameModal(true);
     });
@@ -96,13 +124,12 @@ const PlayScreen = () => {
     }
   }
 
-
   return (
     <>
       <VStack className="flex-1 ">
         <HStack className="justify-between items-center bg-[#0c2665] p-2" style={{ paddingTop: insets.top }}>
           <Pressable onPress={() => router.back()}>
-            <Box className="size-10 bg-green-700 flex items-center justify-center rounded-md">
+            <Box className="size-10 bg-[#BF092F] flex items-center justify-center rounded-md">
               <Entypo name="chevron-left" size={24} color="white" />
             </Box>
           </Pressable>

@@ -12,11 +12,12 @@ import { HStack } from '@/components/ui/hstack';
 import { Grid, GridItem } from '@/components/ui/grid';
 import { Pressable } from '@/components/ui/pressable';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
-
+import WoodSound from '@/assets/sounds/wood.mp3';
+import { useAudioPlayer } from 'expo-audio';
 const Checkers = () => {
   const socket = getSocket();
   const { game } = useLocalSearchParams<{ game: string }>();
-
+  const WoodPlayer = useAudioPlayer(WoodSound);
   const user = useSelector((state: RootState) => state.user.data);
   const [from, setFrom] = useState<{ x: number; y: number } | null>(null);
   const [playingGame, setPlayingGame] = useState(JSON.parse(game));
@@ -25,6 +26,8 @@ const Checkers = () => {
     if (!socket) return;
     socket.on('gameUpdate', (gameUpdate) => {
       setPlayingGame(gameUpdate);
+      WoodPlayer.seekTo(0);
+      WoodPlayer.play();
     });
 
     return () => {
@@ -47,10 +50,10 @@ const Checkers = () => {
 
   return (
     <VStack className=" w-full" space="md">
-      <HStack className="justify-between">
+      <HStack className="justify-between p-4">
         <VStack space="xs">
           <HStack space="md" className="items-center">
-            <Avatar size="md" className="border border-white rounded-lg overflow-hidden ">
+            <Avatar size="lg" className="border border-white rounded-lg overflow-hidden ">
               <AvatarFallbackText>{playingGame.players[0].username}</AvatarFallbackText>
               <AvatarImage
                 source={{
@@ -60,18 +63,18 @@ const Checkers = () => {
               />
             </Avatar>
             {playingGame.players[0].userId === playingGame.options.turn && (
-              <FontAwesome name={'arrow-left'} size={24} color={playingGame.options.turn === user?.id ? '#16a34a' : 'white'} />
+              <FontAwesome name={'arrow-left'} size={24} color={playingGame.options.turn === user?.id ? '#FFD93D' : 'white'} />
             )}
           </HStack>
-          <Text bold>{playingGame.players[0].username}</Text>
+          <Text bold>{playingGame.players[0].username.slice(0, 8)}</Text>
         </VStack>
 
         <VStack space="xs" className="items-end">
           <HStack space="md" className="items-center">
             {playingGame.players[1].userId === playingGame.options.turn && (
-              <FontAwesome name={'arrow-right'} size={24} color={playingGame.options.turn === user?.id ? '#16a34a' : 'white'} />
+              <FontAwesome name={'arrow-right'} size={24} color={playingGame.options.turn === user?.id ? '#FFD93D' : 'white'} />
             )}
-            <Avatar size="md" className="border border-white rounded-lg overflow-hidden">
+            <Avatar size="lg" className="border border-white rounded-lg overflow-hidden">
               <AvatarFallbackText>{playingGame.players[1].username}</AvatarFallbackText>
               <AvatarImage
                 source={{
@@ -81,11 +84,11 @@ const Checkers = () => {
               />
             </Avatar>
           </HStack>
-          <Text bold>{playingGame.players[1].username}</Text>
+          <Text bold>{playingGame.players[1].username.slice(0, 8)}</Text>
         </VStack>
       </HStack>
       <Grid
-        _extra={{ className: 'grid-cols-8 ' }}
+        _extra={{ className: 'grid-cols-8  mb-20' }}
         style={{ transform: [{ rotate: user?.id === playingGame.players[1].userId ? '180deg' : '0deg' }] }}
       >
         {playingGame.options.board.map((row: any, y: number) =>
@@ -113,7 +116,7 @@ const Checkers = () => {
                     <Box
                       className="pb-[2px] rounded-full"
                       style={{
-                        backgroundColor: cell.color,
+                        backgroundColor: cell.color === 'black' ? 'black' : '#61140f',
                         paddingBottom: user?.id === playingGame.players[1].userId ? 0 : 3,
                         paddingTop: user?.id === playingGame.players[1].userId ? 3 : 0,
                       }}
@@ -121,10 +124,12 @@ const Checkers = () => {
                       <Box
                         className=" size-8 rounded-full"
                         style={{
-                          backgroundColor: cell.color === 'black' ? '#222831' : '#E62727',
+                          backgroundColor: cell.color === 'black' ? '#222831' : 'red',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
+                          outlineWidth: 1,
+                          outlineColor: cell.color === 'black' ? '#4f4f4d' : '#e86666',
                         }}
                       >
                         <Box style={{ transform: [{ rotate: user?.id === playingGame.players[1].userId ? '180deg' : '0deg' }] }}>

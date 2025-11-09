@@ -18,11 +18,12 @@ import { HStack } from '@/components/ui/hstack';
 import { Grid, GridItem } from '@/components/ui/grid';
 import { Pressable } from '@/components/ui/pressable';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
-
+import { useAudioPlayer } from 'expo-audio';
+import WoodSound from '@/assets/sounds/wood.mp3';
 const Chess = () => {
   const socket = getSocket();
   const { game } = useLocalSearchParams<{ game: string }>();
-
+  const WoodPlayer = useAudioPlayer(WoodSound);
   const user = useSelector((state: RootState) => state.user.data);
   const [from, setFrom] = useState('');
   const [playingGame, setPlayingGame] = useState(JSON.parse(game));
@@ -31,6 +32,8 @@ const Chess = () => {
     if (!socket) return;
     socket.on('gameUpdate', (gameUpdate) => {
       setPlayingGame(gameUpdate);
+         WoodPlayer.seekTo(0);
+      WoodPlayer.play();
     });
 
     return () => {
@@ -76,10 +79,10 @@ const Chess = () => {
   }
   return (
     <VStack className=" w-full" space="md">
-      <HStack className="justify-between">
+      <HStack className="justify-between p-4">
         <VStack space="xs">
           <HStack space="md" className="items-center">
-            <Avatar size="md" className="border border-white rounded-lg overflow-hidden ">
+            <Avatar size="lg" className="border border-white rounded-lg overflow-hidden ">
               <AvatarFallbackText>{playingGame.players[0].username}</AvatarFallbackText>
               <AvatarImage
                 source={{
@@ -89,18 +92,18 @@ const Chess = () => {
               />
             </Avatar>
             {playingGame.players[0].userId === playingGame.options.turn && (
-              <FontAwesome name={'arrow-left'} size={24} color={playingGame.options.turn === user?.id ? '#16a34a' : 'white'} />
+              <FontAwesome name={'arrow-left'} size={24} color={playingGame.options.turn === user?.id ? '#FFD93D' : 'white'} />
             )}
           </HStack>
-          <Text bold>{playingGame.players[0].username}</Text>
+          <Text bold>{playingGame.players[0].username.slice(0, 8)}</Text>
         </VStack>
 
         <VStack space="xs" className="items-end">
           <HStack space="md" className="items-center">
             {playingGame.players[1].userId === playingGame.options.turn && (
-              <FontAwesome name={'arrow-right'} size={24} color={playingGame.options.turn === user?.id ? '#16a34a' : 'white'} />
+              <FontAwesome name={'arrow-right'} size={24} color={playingGame.options.turn === user?.id ? '#FFD93D' : 'white'} />
             )}
-            <Avatar size="md" className="border border-white rounded-lg overflow-hidden">
+            <Avatar size="lg" className="border border-white rounded-lg overflow-hidden">
               <AvatarFallbackText>{playingGame.players[1].username}</AvatarFallbackText>
               <AvatarImage
                 source={{
@@ -110,11 +113,11 @@ const Chess = () => {
               />
             </Avatar>
           </HStack>
-          <Text bold>{playingGame.players[1].username}</Text>
+          <Text bold>{playingGame.players[1].username.slice(0, 8)}</Text>
         </VStack>
       </HStack>
       <Grid
-        _extra={{ className: 'grid-cols-8 ' }}
+        _extra={{ className: 'grid-cols-8 mb-20' }}
         style={{ transform: [{ rotate: user?.id === playingGame.players[1].userId ? '180deg' : '0deg' }] }}
       >
         {playingGame.options.board.map((row: any, y: number) =>

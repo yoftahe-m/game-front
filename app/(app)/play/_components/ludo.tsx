@@ -13,6 +13,7 @@ import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
 import { Pressable } from '@/components/ui/pressable';
+import Cone from '@/assets/icons/Cone';
 
 const Ludo = () => {
   const socket = getSocket();
@@ -110,7 +111,9 @@ const Ludo = () => {
                     >
                       {pinsAtSquare.map((p: any, i: number) => (
                         <Pressable key={i} onPress={() => movePin(p.home)} className="absolute z-50">
-                          <MaterialCommunityIcons name="chess-pawn" size={isSingle ? 24 : 14} color={getColor(p.color, 500)} />
+                          {/* <MaterialCommunityIcons name="chess-pawn" size={isSingle ? 24 : 14} color={getColor(p.color, 500)} />
+                           */}
+                          <Cone width={30} height={30} color={p.color}/>
                         </Pressable>
                       ))}
                     </Box>
@@ -259,7 +262,7 @@ export const ColorPanel = ({ color }: { color: ColorType }) => {
         borderColor,
       }}
     >
-      <Box style={{ width: '85%', aspectRatio: 1, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 8 }} />
+      <Box style={{ width: '75%', aspectRatio: 1, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 8 }} />
     </LinearGradient>
   );
 };

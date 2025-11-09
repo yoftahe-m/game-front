@@ -68,6 +68,13 @@ export const userApi = createApi({
         };
       },
     }),
+    refreshCoin: builder.query<any, any>({
+      query: () => {
+        return {
+          url: `user/refreshCoin`,
+        };
+      },
+    }),
   }),
 });
 
@@ -78,5 +85,6 @@ export const {
   useChangeProfilePicMutation,
   useChangeProfileMutation,
   useSearchUserQuery,
-  useGetReferredUsersQuery
+  useGetReferredUsersQuery,
+  useRefreshCoinQuery
 } = userApi;
