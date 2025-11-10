@@ -49,6 +49,7 @@ const userSlice = createSlice({
       }
     },
     setCoins: (state, action: PayloadAction<{ coins: number }>) => {
+      console.log("first" ,action.payload)
       if (state.data) {
         state.data.coins = action.payload.coins;
       }

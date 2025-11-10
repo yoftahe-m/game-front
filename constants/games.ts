@@ -20,20 +20,20 @@ export default [
       'Luck meets strategy! Roll, race, and block your opponents — reach home first to claim victory and the prize. Only one can rule the board!',
     image: Ludo,
   },
-  {
-    id: 3,
-    title: 'Crazy',
-    description:
-      'A popular board game for 2–4 players where each player races their tokens from start to finish based on dice rolls. The first to get all tokens home wins.',
-    image: Crazy,
-  },
-  {
-    id: 4,
-    title: 'Flappy',
-    description:
-      'A popular board game for 2–4 players where each player races their tokens from start to finish based on dice rolls. The first to get all tokens home wins.',
-    image: Flappy,
-  },
+  // {
+  //   id: 3,
+  //   title: 'Crazy',
+  //   description:
+  //     'A popular board game for 2–4 players where each player races their tokens from start to finish based on dice rolls. The first to get all tokens home wins.',
+  //   image: Crazy,
+  // },
+  // {
+  //   id: 4,
+  //   title: 'Flappy',
+  //   description:
+  //     'A popular board game for 2–4 players where each player races their tokens from start to finish based on dice rolls. The first to get all tokens home wins.',
+  //   image: Flappy,
+  // },
   {
     id: 5,
     title: 'Checkers',

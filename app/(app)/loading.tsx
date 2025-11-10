@@ -17,7 +17,10 @@ import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar'
 export default function LoadingScreen() {
   const socket = getSocket();
   const { gameData, gameId } = useLocalSearchParams();
-  const [game, setGame] = useState<{ id: string; type: string; amount: string; maxPlayers: number; players: any[] }>(JSON.parse(gameData as string));
+  const [game, setGame] = useState<{ id: string; type: string; amount: string; maxPlayers: string; winPinCount: string; players: any[] }>(
+    JSON.parse(gameData as string)
+  );
+
   const user = useSelector((state: RootState) => state.user.data);
 
   function leaveGame() {
@@ -46,6 +49,7 @@ export default function LoadingScreen() {
         picture: user?.profilePic,
         gameId,
       });
+
     } else {
       socket.emit('createGame', {
         userId: user!.id,
@@ -53,7 +57,9 @@ export default function LoadingScreen() {
         picture: user!.profilePic,
         type: game.type,
         options: {},
-        amount: game.amount,
+        amount: Number(game.amount),
+        maxPlayers: Number(game.maxPlayers),
+        winPinCount: Number(game.winPinCount),
       });
     }
   }, []);
@@ -132,7 +138,7 @@ export default function LoadingScreen() {
         </VStack>
         <HStack className="items-center justify-center p-4 bg-green-600 rounded-lg" space="md">
           <ActivityIndicator size="small" color={'white'} />
-          <Text bold>{game.players.length === game.maxPlayers ? 'Game is Starting' : 'Waiting for others to join the game.'}</Text>
+          <Text bold>{game.players.length === Number(game.maxPlayers) ? 'Game is Starting' : 'Waiting for others to join the game.'}</Text>
         </HStack>
       </VStack>
     </SafeAreaView>

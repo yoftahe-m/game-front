@@ -17,7 +17,7 @@ export default function TabLayout() {
         tabBarActiveTintColor: '#fbbf24',
         tabBarInactiveTintColor: 'white',
       }}
-      initialRouteName={"index"}
+      initialRouteName={'index'}
     >
       <Tabs.Screen
         name="leaderboard"
@@ -128,18 +128,18 @@ function MyTabBar({ state, descriptors, navigation }) {
                 borderBottomWidth: 0,
                 borderColor: isFocused ? '#113da6' : '#081939',
                 borderTopColor: '#113da6',
-                overflow:"hidden"
+                overflow: 'hidden',
               }}
             >
               <LinearGradient
-              colors={isFocused ? ['#004fde', '#1d3285'] : ['#1d3285', '#0e1f4d']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 0, y: 1 }}
-              style={{width:"100%",height:"100%",alignItems:"center",justifyContent:"center"}}
-            >
-              {label === 'Home' && <Home width={isFocused ? 60 : 40} height={isFocused ? 60 : 40} />}
-              {label === 'Games' && <Game width={isFocused ? 60 : 40} height={isFocused ? 60 : 40} />}
-              {label === 'Leaderboard' && <Trophy width={isFocused ? 60 : 40} height={isFocused ? 60 : 40} />}
+                colors={isFocused ? ['#004fde', '#1d3285'] : ['#1d3285', '#0e1f4d']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 0, y: 1 }}
+                style={{ width: '100%', height: '100%', alignItems: 'center', justifyContent: 'center' }}
+              >
+                {label === 'Home' && <Home width={isFocused ? 60 : 40} height={isFocused ? 60 : 40} />}
+                {label === 'Games' && <Game width={isFocused ? 60 : 40} height={isFocused ? 60 : 40} />}
+                {label === 'Leaderboard' && <Trophy width={isFocused ? 60 : 40} height={isFocused ? 60 : 40} />}
               </LinearGradient>
             </Animated.View>
           </PlatformPressable>

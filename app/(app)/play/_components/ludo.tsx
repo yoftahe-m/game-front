@@ -14,6 +14,8 @@ import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
 import { Pressable } from '@/components/ui/pressable';
 import Cone from '@/assets/icons/Cone';
+import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
+import { Grid, GridItem } from '@/components/ui/grid';
 
 const Ludo = () => {
   const socket = getSocket();
@@ -69,13 +71,13 @@ const Ludo = () => {
       <HStack className="justify-between">
         <Player
           color={'#FF2400'}
-          name={playingGame.players[0].username}
-          userId={playingGame.players[0].userId}
+          player={playingGame.players[0]}
           turn={playingGame.options.turn}
           gameId={playingGame.id}
           roll={playingGame.options.roll}
+          rolledBy={playingGame.options.rolledBy}
         />
-        {playingGame.maxPlayers === 4 && <Player color={'#0F52BA'} inverse={true} gameId={playingGame.id} roll={playingGame.options.roll} />}
+        {/* {playingGame.maxPlayers === 4 && <Player color={'#0F52BA'} inverse={true} gameId={playingGame.id} roll={playingGame.options.roll} />} */}
       </HStack>
       <Box className=" rounded-xl overflow-hidden relative" style={{ aspectRatio: 1 }}>
         {BOARD.map((row, rowIndex) => (
@@ -101,19 +103,18 @@ const Ludo = () => {
                   return (
                     <Box
                       style={{
-                        width: 36, // fixed size box for wrapping
-                        height: 36,
+                        width: '100%', // fixed size box for wrapping
+                        height: '100%',
+                        display: 'flex',
                         flexDirection: 'row',
                         flexWrap: isSingle ? 'nowrap' : 'wrap',
-                        justifyContent: 'center',
-                        alignItems: 'center',
+                        justifyContent: isSingle ? 'center' : 'flex-start',
+                        alignItems: isSingle ? 'center' : 'flex-start',
                       }}
                     >
                       {pinsAtSquare.map((p: any, i: number) => (
-                        <Pressable key={i} onPress={() => movePin(p.home)} className="absolute z-50">
-                          {/* <MaterialCommunityIcons name="chess-pawn" size={isSingle ? 24 : 14} color={getColor(p.color, 500)} />
-                           */}
-                          <Cone width={30} height={30} color={p.color}/>
+                        <Pressable key={i} onPress={() => movePin(p.home)} className=" z-50">
+                          <Cone width={isSingle ? 30 : 10} height={isSingle ? 30 : 10} color={p.color} />
                         </Pressable>
                       ))}
                     </Box>
@@ -140,15 +141,26 @@ const Ludo = () => {
         </VStack>
       </Box>
       <HStack className="flex flex-row justify-between">
-        {playingGame.maxPlayers === 4 ? <Player color={'#00C853'} gameId={playingGame.id} roll={playingGame.options.roll} /> : <Box />}
+        {playingGame.maxPlayers === 4 ? (
+          <Player
+            color={'#00C853'}
+            player={playingGame.players[4]}
+            turn={playingGame.options.turn}
+            gameId={playingGame.id}
+            roll={playingGame.options.roll}
+            rolledBy={playingGame.options.rolledBy}
+          />
+        ) : (
+          <Box />
+        )}
         <Player
-          color={'#FFF700'}
+          color={'#facc15'}
           inverse={true}
-          name={playingGame.players[playingGame.players.length === 2 ? 1 : 3].username}
-          userId={playingGame.players[playingGame.players.length === 2 ? 1 : 3].id}
+          player={playingGame.players[playingGame.players.length === 2 ? 1 : 3]}
           turn={playingGame.options.turn}
           gameId={playingGame.id}
           roll={playingGame.options.roll}
+          rolledBy={playingGame.options.rolledBy}
         />
       </HStack>
     </VStack>
@@ -160,25 +172,24 @@ export default Ludo;
 function Player({
   color,
   inverse = false,
-  name,
-  userId,
+  player,
   turn,
   gameId,
   roll,
+  rolledBy,
 }: {
   color: string;
   turn?: string;
   inverse?: boolean;
-  name?: string;
-  userId?: string;
+  player: any;
   gameId: String;
   roll: number;
+  rolledBy?: string;
 }) {
   const socket = getSocket();
   const user = useSelector((state: RootState) => state.user.data);
-  const [rolling, setRolling] = useState(false);
   const rollDie = () => {
-    console.log('rolling');
+    if (turn !== user?.id) return;
     if (!socket) return;
     socket.emit('ludo:rollDie', { userId: user!.id, gameId });
   };
@@ -209,22 +220,34 @@ function Player({
         break;
     }
   }
-  console.log(user?.id, turn, userId);
+
   return (
     <VStack space="sm">
       <HStack space="md" className={inverse ? 'flex-row-reverse' : ''} style={{ alignItems: 'center' }}>
-        <Box className="rounded-full justify-center items-center size-12" style={{ backgroundColor: color }}>
-          <Feather name="user" size={24} color="white" />
-        </Box>
+        <Avatar size="lg" className="border border-white rounded-lg overflow-hidden ">
+          <AvatarFallbackText>{player.username}</AvatarFallbackText>
+          <AvatarImage
+            source={{
+              uri: player.picture,
+            }}
+            className="rounded-none"
+          />
+        </Avatar>
         <Pressable onPress={rollDie}>
           <Box className="size-12 rounded-lg justify-center items-center" style={{ backgroundColor: color }}>
-            <FontAwesome5 name={dice(roll)} size={24} color="white" />
+            {turn === player.userId && turn === rolledBy ? (
+              <FontAwesome5 name={dice(roll)} size={24} color="white" />
+            ) : (
+              <FontAwesome5 name="dice" size={24} color="white" />
+            )}
           </Box>
         </Pressable>
-        {user?.id === turn && <FontAwesome name={inverse ? 'arrow-right' : 'arrow-left'} size={24} color="black" />}
+        {player.userId === turn && (
+          <FontAwesome name={inverse ? 'arrow-right' : 'arrow-left'} size={24} color={turn === user?.id ? '#FFD93D' : 'white'} />
+        )}
       </HStack>
       <Text className={inverse ? 'text-right ' : ''} bold>
-        {name}
+        {player.username}
       </Text>
     </VStack>
   );

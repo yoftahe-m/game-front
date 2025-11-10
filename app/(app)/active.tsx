@@ -113,21 +113,25 @@ export default function TabOneScreen() {
             </HStack>
             <HStack space="2xl">
               <HStack className="items-center relative">
-                <Money style={{ transform: [{ rotate: '120deg' }], marginBottom: 10 }} width={30} height={18} />
-                <Text className="h-6 px-2 border-y border-[#113da6] " bold>
+                <Box className="absolute -left-3 z-10">
+                  <Money style={{ transform: [{ rotate: '120deg' }], marginBottom: 10 }} width={30} height={18} />
+                </Box>
+                <Text className="h-6 px-2 pl-6 bg-[#0f1d3d]" bold>
                   {user?.coins}
                 </Text>
-                <Pressable className="size-8 bg-green-600 flex items-center justify-center " onPress={() => router.push('/(app)/wallet')}>
+                <Pressable className="size-8 bg-green-600 flex items-center justify-center rounded-md " onPress={() => router.push('/(app)/wallet')}>
                   <FontAwesome5 name="plus" size={12} color="white" />
                 </Pressable>
               </HStack>
 
               <HStack className="items-center">
-                <Coin />
-                <Text className="h-6 px-2" bold>
+                <Box className="absolute -left-3 z-10">
+                  <Coin />
+                </Box>
+                <Text className="h-6 px-2 pl-6 bg-[#0f1d3d]" bold>
                   {user?.rewards}
                 </Text>
-                <Pressable className="size-5 bg-green-600 flex items-center justify-center" onPress={() => router.push('/(app)/referral')}>
+                <Pressable className="size-8 bg-green-600 flex items-center justify-center rounded-md" onPress={() => router.push('/(app)/referral')}>
                   <FontAwesome5 name="plus" size={12} color="white" />
                 </Pressable>
               </HStack>

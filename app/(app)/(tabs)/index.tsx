@@ -154,14 +154,14 @@ export default function FullScreenRadialGradientWithContent() {
   const hexWidth = 28;
   const hexHeight = 49;
 
-  const { data, refetch, isFetching } = useRefreshCoinQuery({});
+  const { refetch, isFetching } = useRefreshCoinQuery({});
 
   const onRefresh = useCallback(() => {
     refetch()
       .unwrap() // unwrap returns a promise that either resolves with data or throws an error
       .then((data) => {
-        console.log('first', data.coins);
-        setCoins({ coins: data.coins });
+        console.log('first', typeof data.coins, data.coins);
+        dispatch(setCoins({ coins: data.coins }));
       })
       .catch((error) => {
         console.log('error', error);
@@ -215,32 +215,42 @@ export default function FullScreenRadialGradientWithContent() {
               </HStack>
               <HStack space="2xl">
                 <HStack className="items-center relative">
-                  <Money style={{ transform: [{ rotate: '120deg' }], marginBottom: 10 }} width={30} height={18} />
-                  <Text className="h-6 px-2 border-y border-[#113da6] " bold>
+                  <Box className="absolute -left-3 z-10">
+                    <Money style={{ transform: [{ rotate: '120deg' }], marginBottom: 10 }} width={30} height={18} />
+                  </Box>
+                  <Text className="h-6 px-2 pl-6 bg-[#0f1d3d]" bold>
                     {user?.coins}
                   </Text>
-                  <Pressable className="size-8 bg-green-600 flex items-center justify-center " onPress={() => router.push('/(app)/wallet')}>
+                  <Pressable
+                    className="size-8 bg-green-600 flex items-center justify-center rounded-md "
+                    onPress={() => router.push('/(app)/wallet')}
+                  >
                     <FontAwesome5 name="plus" size={12} color="white" />
                   </Pressable>
                 </HStack>
 
                 <HStack className="items-center">
-                  {/* <Box className="size-6 bg-amber-300 flex items-center justify-center rounded-full">
-                    <FontAwesome5 name="coins" size={12} color="white" />
-                  </Box> */}
-                  <Coin />
-                  <Text className="h-6 px-2" bold>
+                  <Box className="absolute -left-3 z-10">
+                    <Coin />
+                  </Box>
+                  <Text className="h-6 px-2 pl-6 bg-[#0f1d3d]" bold>
                     {user?.rewards}
                   </Text>
-                  <Pressable className="size-5 bg-green-600 flex items-center justify-center" onPress={() => router.push('/(app)/referral')}>
+                  <Pressable
+                    className="size-8 bg-green-600 flex items-center justify-center rounded-md"
+                    onPress={() => router.push('/(app)/referral')}
+                  >
                     <FontAwesome5 name="plus" size={12} color="white" />
                   </Pressable>
                 </HStack>
               </HStack>
             </HStack>
           </LinearGradient>
-          <ScrollView className='flex-1' refreshControl={<RefreshControl refreshing={isFetching} onRefresh={onRefresh} />}>
-            <VStack className="justify-between flex-1 p-2 pb-16">
+          <ScrollView
+            className="flex-1"
+            refreshControl={<RefreshControl colors={['white']} progressBackgroundColor={'#1d3285'} refreshing={isFetching} onRefresh={onRefresh} />}
+          >
+            <VStack className="justify-between flex-1 p-2 ">
               <HStack className="justify-between flex-1 ">
                 <VStack space="3xl" className="mt-5">
                   <ButtonIcon
@@ -284,93 +294,93 @@ export default function FullScreenRadialGradientWithContent() {
                   />
                 </VStack>
               </HStack>
-              <VStack space="md" className="flex items-center w-[80%] mx-auto ">
-                <GradientButton
-                  colors={['#8f94fb', '#4e54c8']}
-                  outerStyle={{
-                    paddingBottom: 5,
-                    paddingTop: 0,
-                    borderRadius: 50,
-                    backgroundColor: '#4046ad',
-                    shadowColor: '#000',
-                    shadowOpacity: 0.5,
-                    shadowRadius: 8,
-                    shadowOffset: { width: 0, height: 4 },
-                    width: '100%',
-                  }}
-                  innerStyle={{
-                    height: 80,
-                    borderRadius: 50,
-                    borderWidth: 1,
-                    borderColor: '#c8ffc8',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}
-                  onPress={() => router.push('/(app)/(tabs)/games')}
-                >
-                  <Text
-                    style={{
-                      color: 'white',
-                      fontWeight: '700',
-                      fontSize: 18,
-                      textShadowColor: 'rgba(0,0,0,0.4)',
-                      textShadowOffset: { width: 1, height: 2 },
-                      textShadowRadius: 3,
-                    }}
-                  >
-                    Start a game
-                  </Text>
-                  <Box className=" flex items-center justify-center  w-[80px] overflow-hidden">
-                    <Die width={105} height={50} />
-                  </Box>
-                </GradientButton>
-
-                <GradientButton
-                  colors={['#f953c6', '#b91d73']}
-                  outerStyle={{
-                    paddingBottom: 5,
-                    paddingTop: 0,
-                    borderRadius: 50,
-                    backgroundColor: '#85265b',
-                    shadowColor: '#000',
-                    shadowOpacity: 0.5,
-                    shadowRadius: 8,
-                    shadowOffset: { width: 0, height: 4 },
-                    width: '100%',
-                  }}
-                  innerStyle={{
-                    height: 80,
-                    borderRadius: 50,
-                    borderWidth: 1,
-                    borderColor: '#c8ffc8',
-                    justifyContent: 'center',
-                    alignItems: 'center',
-                  }}
-                  onPress={() => router.push('/(app)/active')}
-                >
-                  <Box className=" flex items-center justify-center  w-[80px] overflow-hidden">
-                    <Joystick width={120} height={75} />
-                  </Box>
-                  <Text
-                    style={{
-                      color: 'white',
-                      fontWeight: '700',
-                      fontSize: 18,
-                      textShadowColor: 'rgba(0,0,0,0.4)',
-                      textShadowOffset: { width: 1, height: 2 },
-                      textShadowRadius: 3,
-                    }}
-                  >
-                    Join a game
-                  </Text>
-                </GradientButton>
-
-                <Pressable onPress={() => router.push('/(app)/terms')}>
-                  <Text>Terms and conditions</Text>
-                </Pressable>
-              </VStack>
+              {/* <VStack space="md" className="flex items-center w-[80%] mx-auto "></VStack> */}
             </VStack>
           </ScrollView>
+          <VStack space="md" className="pb-16 w-[80%] mx-auto items-center">
+            <GradientButton
+              colors={['#8f94fb', '#4e54c8']}
+              outerStyle={{
+                paddingBottom: 5,
+                paddingTop: 0,
+                borderRadius: 50,
+                backgroundColor: '#4046ad',
+                shadowColor: '#000',
+                shadowOpacity: 0.5,
+                shadowRadius: 8,
+                shadowOffset: { width: 0, height: 4 },
+                width: '100%',
+              }}
+              innerStyle={{
+                height: 80,
+                borderRadius: 50,
+                borderWidth: 1,
+                borderColor: '#c8ffc8',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+              onPress={() => router.push('/(app)/(tabs)/games')}
+            >
+              <Text
+                style={{
+                  color: 'white',
+                  fontWeight: '700',
+                  fontSize: 18,
+                  textShadowColor: 'rgba(0,0,0,0.4)',
+                  textShadowOffset: { width: 1, height: 2 },
+                  textShadowRadius: 3,
+                }}
+              >
+                Start a game
+              </Text>
+              <Box className=" flex items-center justify-center  w-[80px] overflow-hidden">
+                <Die width={105} height={50} />
+              </Box>
+            </GradientButton>
+
+            <GradientButton
+              colors={['#f953c6', '#b91d73']}
+              outerStyle={{
+                paddingBottom: 5,
+                paddingTop: 0,
+                borderRadius: 50,
+                backgroundColor: '#85265b',
+                shadowColor: '#000',
+                shadowOpacity: 0.5,
+                shadowRadius: 8,
+                shadowOffset: { width: 0, height: 4 },
+                width: '100%',
+              }}
+              innerStyle={{
+                height: 80,
+                borderRadius: 50,
+                borderWidth: 1,
+                borderColor: '#c8ffc8',
+                justifyContent: 'center',
+                alignItems: 'center',
+              }}
+              onPress={() => router.push('/(app)/active')}
+            >
+              <Box className=" flex items-center justify-center  w-[80px] overflow-hidden">
+                <Joystick width={120} height={75} />
+              </Box>
+              <Text
+                style={{
+                  color: 'white',
+                  fontWeight: '700',
+                  fontSize: 18,
+                  textShadowColor: 'rgba(0,0,0,0.4)',
+                  textShadowOffset: { width: 1, height: 2 },
+                  textShadowRadius: 3,
+                }}
+              >
+                Join a game
+              </Text>
+            </GradientButton>
+            <Pressable onPress={() => router.push('/(app)/terms')}>
+              <Text>Terms and conditions</Text>
+            </Pressable>
+          </VStack>
         </VStack>
       </View>
       <Modal

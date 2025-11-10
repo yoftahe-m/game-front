@@ -83,16 +83,18 @@ const PlayScreen = () => {
     socket.on('gameOver', (game) => {
       setParseGame(game);
 
-      console.log(game.winner)
+      console.log(game.winner);
       if (game.winner === user?.id) {
         WonPlayer.seekTo(0);
         WonPlayer.play();
+        dispatch(updateCoins({ amount: Number(parseGame.amount) }));
       } else if (game.winner === 'draw') {
         DrawPlayer.seekTo(0);
         DrawPlayer.play();
       } else {
         LostPlayer.seekTo(0);
         LostPlayer.play();
+        dispatch(updateCoins({ amount: Number(-parseGame.amount) }));
       }
 
       setGameModal(true);

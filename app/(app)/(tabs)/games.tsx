@@ -7,7 +7,6 @@ import { useWindowDimensions, ScrollView } from 'react-native';
 import {
   Select,
   SelectItem,
-  SelectIcon,
   SelectInput,
   SelectPortal,
   SelectTrigger,
@@ -41,19 +40,20 @@ export default function GamesScreen() {
   const [showSheet, setShowSheet] = useState(false);
   const [game, setGame] = useState<any>(null);
   const { width } = useWindowDimensions();
-  const [maxPlayers, setMaxPlayers] = useState(2);
+  const [maxPlayers, setMaxPlayers] = useState('2');
   const [amount, setAmount] = useState('5');
+  const [winPinCount, setWinPinCount] = useState('1');
   // Responsive column count (2 columns on small, 3+ on wide screens)
   const numColumns = width < 500 ? 2 : width < 900 ? 3 : 4;
   const [depositModal, setDepositModal] = useState(false);
   const user = useSelector((state: RootState) => state.user.data);
   return (
-    <SafeAreaView style={{ flex: 1, paddingHorizontal: 8,  }}>
+    <SafeAreaView style={{ flex: 1, paddingHorizontal: 8 }}>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 16 }}>
         <Text size="xl" bold className="py-4">
           All Games
         </Text>
-        <Grid className="gap-4" _extra={{ className: `grid-cols-${numColumns}` }} style={{paddingBottom:20}}>
+        <Grid className="gap-4" _extra={{ className: `grid-cols-${numColumns}` }} style={{ paddingBottom: 20 }}>
           {games.map((game) => (
             <GridItem key={game.id} className="bg-[#0c2665]  rounded-lg shadow-sm overflow-hidden" _extra={{ className: 'col-span-1' }}>
               <Pressable
@@ -117,8 +117,9 @@ export default function GamesScreen() {
                         key={item}
                         label={item}
                         value={item}
-                        className="bg-[#071843] items-center justify-center mb-2 rounded-md "
+                        className=" items-center justify-center mb-2 rounded-md "
                         textStyle={{ style: { color: 'white' } }}
+                        style={{ backgroundColor: amount === item ? '#16a34a' : '#071843' }}
                       />
                     ))}
                   </SelectContent>
@@ -130,35 +131,60 @@ export default function GamesScreen() {
                   <HStack space="sm" className="flex flex-row">
                     <Pressable
                       onPress={() => {
-                        setMaxPlayers(2);
+                        setMaxPlayers('2');
                       }}
                       className="flex-1"
                     >
                       <Box
                         className="h-12 w-full rounded-md flex items-center justify-center border "
-                        style={{ borderColor: maxPlayers === 2 ? '#16a34a' : 'white' }}
+                        style={{ borderColor: maxPlayers === '2' ? '#16a34a' : 'white' }}
                       >
-                        <Text bold style={{ color: maxPlayers === 2 ? '#16a34a' : 'white' }}>
+                        <Text bold style={{ color: maxPlayers === '2' ? '#16a34a' : 'white' }}>
                           2
                         </Text>
                       </Box>
                     </Pressable>
                     <Pressable
                       onPress={() => {
-                        setMaxPlayers(4);
+                        setMaxPlayers('4');
                       }}
                       className="flex-1"
                     >
                       <Box
                         className="h-12 w-full rounded-md flex items-center justify-center border "
-                        style={{ borderColor: maxPlayers === 4 ? '#16a34a' : 'white' }}
+                        style={{ borderColor: maxPlayers === '4' ? '#16a34a' : 'white' }}
                       >
-                        <Text bold style={{ color: maxPlayers === 4 ? '#16a34a' : 'white' }}>
+                        <Text bold style={{ color: maxPlayers === '4' ? '#16a34a' : 'white' }}>
                           4
                         </Text>
                       </Box>
                     </Pressable>
                   </HStack>
+                  <Text bold>Win Pin Count</Text>
+                  <Select selectedValue={winPinCount} onValueChange={(v) => setWinPinCount(v)}>
+                    <SelectTrigger variant="outline" size="md" className="h-12 justify-between ">
+                      <SelectInput placeholder="Select amount" className="text-white" />
+                      <Entypo name="chevron-small-down" size={24} color="white" />
+                    </SelectTrigger>
+                    <SelectPortal>
+                      <SelectBackdrop />
+                      <SelectContent style={{ paddingBottom: 20, backgroundColor: '#132e61', borderWidth: 0 }}>
+                        <SelectDragIndicatorWrapper>
+                          <SelectDragIndicator />
+                        </SelectDragIndicatorWrapper>
+                        {['1', '2', '4'].map((item) => (
+                          <SelectItem
+                            key={item}
+                            label={item}
+                            value={item}
+                            className=" items-center justify-center mb-2 rounded-md "
+                            textStyle={{ style: { color: 'white' } }}
+                            style={{ backgroundColor: winPinCount === item ? '#16a34a' : '#071843' }}
+                          />
+                        ))}
+                      </SelectContent>
+                    </SelectPortal>
+                  </Select>
                 </>
               )}
 
@@ -177,7 +203,8 @@ export default function GamesScreen() {
                           status: 'waiting',
                           options: {},
                           maxPlayers: maxPlayers,
-                          amount: amount.toString(),
+                          winPinCount: winPinCount,
+                          amount: amount,
                           players: [{ userId: user?.id, username: user?.fullName, picture: user?.profilePic, socketId: '1', status: 'active' }],
                         }),
                       },
