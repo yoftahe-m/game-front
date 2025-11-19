@@ -50,6 +50,7 @@ export default function SigninScreen() {
       dispatch(signin(result));
       router.replace('/(app)/(tabs)');
     } catch (error) {
+      console.log(error)
       Toast.show('Sign in failed.', {
         duration: Toast.durations.LONG,
       });

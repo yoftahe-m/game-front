@@ -1,9 +1,10 @@
 import { useAudioPlayer } from 'expo-audio';
-import { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
+import { useSharedValue } from 'react-native-reanimated';
 import { useNavigation } from '@react-navigation/native';
 import { Entypo, FontAwesome5 } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Game } from '@/types/game';
@@ -18,34 +19,42 @@ import Money from '@/assets/icons/Money';
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import Checkers from './_components/checkers';
-import { updateCoins } from '@/store/slice/user';
-import LostSound from '@/assets/sounds/lost.mp3';
-import StartSound from '@/assets/sounds/start.mp3';
 import WonSound from '@/assets/sounds/won.mp3';
-import DrawSound from '@/assets/sounds/draw.mp3';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
+import { Center } from '@/components/ui/center';
+import { updateCoins } from '@/store/slice/user';
+import LostSound from '@/assets/sounds/lost.mp3';
+import DrawSound from '@/assets/sounds/draw.mp3';
 import TicTacToe from './_components/tic-tac-toe';
+import StartSound from '@/assets/sounds/start.mp3';
 import { Pressable } from '@/components/ui/pressable';
 import { GradientButton } from '@/components/Buttons';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
+import AnimatedCircularProgress, { DURATION_MS, interpolateColor, INTERVAL_MS } from './_components/progress';
 import { Modal, ModalBackdrop, ModalBody, ModalContent, ModalFooter, ModalHeader } from '@/components/ui/modal';
+import Countdown from './_components/countdown';
 
 const PlayScreen = () => {
   const socket = getSocket();
   const dispatch = useDispatch();
+  const fill = useSharedValue(100);
   const navigation = useNavigation();
   const insets = useSafeAreaInsets();
   const WonPlayer = useAudioPlayer(WonSound);
   const LostPlayer = useAudioPlayer(LostSound);
   const DrawPlayer = useAudioPlayer(DrawSound);
   const StartPlayer = useAudioPlayer(StartSound);
+  const startTimeRef = useRef<number | null>(null);
   const [gameModal, setGameModal] = useState(false);
+  const tintColor = useSharedValue(interpolateColor(100));
   const [forfeitModal, setForfeitModal] = useState(false);
   const { game } = useLocalSearchParams<{ game: string }>();
   const [pendingAction, setPendingAction] = useState<any>(null);
-  const [parseGame, setParseGame] = useState<Game>(JSON.parse(game));
   const user = useSelector((state: RootState) => state.user.data);
+  const [parseGame, setParseGame] = useState<Game>(JSON.parse(game));
+  const [showCountdownModal, setShowCountdownModal] = useState(true);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { winner } = parseGame;
 
@@ -83,7 +92,6 @@ const PlayScreen = () => {
     socket.on('gameOver', (game) => {
       setParseGame(game);
 
-      console.log(game.winner);
       if (game.winner === user?.id) {
         WonPlayer.seekTo(0);
         WonPlayer.play();
@@ -108,27 +116,71 @@ const PlayScreen = () => {
   function gameZone(type: string) {
     switch (type) {
       case 'Tic Tac Toe':
-        return <TicTacToe />;
-        break;
+        return <TicTacToe resetCountdown={resetCountdown} />;
       case 'Ludo':
-        return <Ludo />;
-        break;
+        return <Ludo resetCountdown={resetCountdown} />;
       case 'Checkers':
-        return <Checkers />;
-        break;
+        return <Checkers resetCountdown={resetCountdown} />;
       case 'Chess':
-        return <Chess />;
-        break;
+        return <Chess resetCountdown={resetCountdown} />;
 
       default:
         return null;
-        break;
     }
   }
 
+  const animate = useCallback(() => {
+    if (!startTimeRef.current) return;
+
+    const now = Date.now();
+    const elapsed = now - startTimeRef.current;
+    let newFill = 100 - (elapsed / DURATION_MS) * 100;
+
+    if (newFill <= 0) {
+      newFill = 0;
+      if (timerRef.current) clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+
+    fill.value = newFill;
+    tintColor.value = interpolateColor(newFill);
+
+    if (newFill > 0) {
+      timerRef.current = setTimeout(animate, INTERVAL_MS);
+    }
+  }, [fill, tintColor]);
+
+  const startCountdown = useCallback(() => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+
+    startTimeRef.current = Date.now();
+    timerRef.current = setTimeout(animate, INTERVAL_MS);
+  }, [animate]);
+
+  const resetCountdown = () => {
+    if (timerRef.current) clearTimeout(timerRef.current);
+    fill.value = 100;
+    tintColor.value = interpolateColor(100);
+    startCountdown();
+  };
+
+  useEffect(() => {
+    startCountdown();
+    return () => {
+      if (timerRef.current) clearTimeout(timerRef.current);
+    };
+  }, [startCountdown]);
+
   return (
     <>
-      <VStack className="flex-1 ">
+      <Countdown
+        showCountdownModal={showCountdownModal}
+        closeCountdownModal={() => {
+          setShowCountdownModal(false);
+          resetCountdown();
+        }}
+      />
+      <VStack className="flex-1 " space="md">
         <HStack className="justify-between items-center bg-[#0c2665] p-2" style={{ paddingTop: insets.top }}>
           <Pressable onPress={() => router.back()}>
             <Box className="size-10 bg-[#BF092F] flex items-center justify-center rounded-md">
@@ -150,9 +202,9 @@ const PlayScreen = () => {
             </HStack>
           </HStack>
         </HStack>
+     
         <VStack className="flex-1  items-center justify-center p-2">{gameZone(parseGame.type)}</VStack>
       </VStack>
-
       <Modal isOpen={forfeitModal} onClose={() => setForfeitModal(false)} size="md">
         <ModalBackdrop />
         <ModalContent className="bg-[#071843] border-0">
@@ -179,7 +231,7 @@ const PlayScreen = () => {
       <Modal
         isOpen={gameModal}
         onClose={() => {
-          setGameModal(false);
+          router.back();
         }}
         size="lg"
       >

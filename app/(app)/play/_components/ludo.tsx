@@ -16,8 +16,11 @@ import { Pressable } from '@/components/ui/pressable';
 import Cone from '@/assets/icons/Cone';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { Grid, GridItem } from '@/components/ui/grid';
-
-const Ludo = () => {
+import LudoBoard from '@/assets/images/ludo.png';
+import { Image } from 'react-native';
+import AnimatedCircularProgress, { interpolateColor } from './progress';
+import { useSharedValue } from 'react-native-reanimated';
+const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
   const socket = getSocket();
   const { game } = useLocalSearchParams<{ game: string }>();
 
@@ -124,20 +127,11 @@ const Ludo = () => {
             ))}
           </Box>
         ))}
-        <VStack className="absolute top-0 bottom-0 left-0 right-0 z-10">
-          <Box className="w-full h-[40%]   flex flex-row">
-            <ColorPanel color="red" />
-            <Box style={{ width: '20%' }} />
-            <ColorPanel color="blue" />
-          </Box>
-          <Box style={{ height: '20%' }} className="flex flex-row justify-center">
-            <CenterPanel />
-          </Box>
-          <Box className="w-full h-[40%]   flex flex-row">
-            <ColorPanel color="green" />
-            <Box style={{ width: '20%' }} />
-            <ColorPanel color="yellow" />
-          </Box>
+        <VStack className="absolute top-0 bottom-0 left-0 right-0 z-10 ">
+          <Image
+            source={LudoBoard} // or base64
+            style={{ width: '100%', height: '100%', backgroundColor: 'green' }}
+          />
         </VStack>
       </Box>
       <HStack className="flex flex-row justify-between">
@@ -186,6 +180,8 @@ function Player({
   roll: number;
   rolledBy?: string;
 }) {
+  const fill = useSharedValue(100);
+  const tintColor = useSharedValue(interpolateColor(100));
   const socket = getSocket();
   const user = useSelector((state: RootState) => state.user.data);
   const rollDie = () => {
@@ -224,15 +220,20 @@ function Player({
   return (
     <VStack space="sm">
       <HStack space="md" className={inverse ? 'flex-row-reverse' : ''} style={{ alignItems: 'center' }}>
-        <Avatar size="lg" className="border border-white rounded-lg overflow-hidden ">
-          <AvatarFallbackText>{player.username}</AvatarFallbackText>
-          <AvatarImage
-            source={{
-              uri: player.picture,
-            }}
-            className="rounded-none"
-          />
-        </Avatar>
+        <Box>
+          <AnimatedCircularProgress size={65} width={10} fill={fill} tintColor={tintColor} backgroundColor="#E0E0E0">
+            <Avatar size="lg" className="border border-white rounded-full overflow-hidden ">
+              <AvatarFallbackText>{player.username}</AvatarFallbackText>
+              <AvatarImage
+                source={{
+                  uri: player.picture,
+                }}
+                className="rounded-none"
+              />
+            </Avatar>
+          </AnimatedCircularProgress>
+        </Box>
+
         <Pressable onPress={rollDie}>
           <Box className="size-12 rounded-lg justify-center items-center" style={{ backgroundColor: color }}>
             {turn === player.userId && turn === rolledBy ? (

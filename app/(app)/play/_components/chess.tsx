@@ -20,7 +20,7 @@ import { Pressable } from '@/components/ui/pressable';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import { useAudioPlayer } from 'expo-audio';
 import WoodSound from '@/assets/sounds/wood.mp3';
-const Chess = () => {
+const Chess = ({ resetCountdown }: { resetCountdown: () => void }) => {
   const socket = getSocket();
   const { game } = useLocalSearchParams<{ game: string }>();
   const WoodPlayer = useAudioPlayer(WoodSound);
@@ -32,7 +32,7 @@ const Chess = () => {
     if (!socket) return;
     socket.on('gameUpdate', (gameUpdate) => {
       setPlayingGame(gameUpdate);
-         WoodPlayer.seekTo(0);
+      WoodPlayer.seekTo(0);
       WoodPlayer.play();
     });
 

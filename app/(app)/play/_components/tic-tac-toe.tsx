@@ -18,7 +18,7 @@ import PrimarySound from '@/assets/sounds/primary.mp3';
 import SecondarySound from '@/assets/sounds/secondary.mp3';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 
-const TicTacToe = () => {
+const TicTacToe = ({ resetCountdown }: { resetCountdown: () => void }) => {
   const socket = getSocket();
   const { game } = useLocalSearchParams<{ game: string }>();
   const PrimaryPlayer = useAudioPlayer(PrimarySound);
@@ -30,6 +30,7 @@ const TicTacToe = () => {
     if (!socket) return;
     socket.on('gameUpdate', (gameUpdate) => {
       setPlayingGame(gameUpdate);
+      resetCountdown();
       if (gameUpdate.options.turn !== user?.id) {
         PrimaryPlayer.seekTo(0);
         PrimaryPlayer.play();

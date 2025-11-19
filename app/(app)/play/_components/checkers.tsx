@@ -14,7 +14,7 @@ import { Pressable } from '@/components/ui/pressable';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
 import WoodSound from '@/assets/sounds/wood.mp3';
 import { useAudioPlayer } from 'expo-audio';
-const Checkers = () => {
+const Checkers = ({ resetCountdown }: { resetCountdown: () => void }) => {
   const socket = getSocket();
   const { game } = useLocalSearchParams<{ game: string }>();
   const WoodPlayer = useAudioPlayer(WoodSound);
