@@ -7,7 +7,7 @@ import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { Pressable } from '@/components/ui/pressable';
-import Ludo from '@/assets/images/ludo.png';
+import Ludo from '@/assets/images/ludo-board.png';
 
 type Color = 'red' | 'blue' | 'yellow' | 'green';
 type Coordinate = { x: number; y: number };

@@ -1,26 +1,36 @@
 import { useSelector } from 'react-redux';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Svg, { Polygon } from 'react-native-svg';
 import { useLocalSearchParams } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Feather, FontAwesome, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Feather, FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 
 import { RootState } from '@/store';
 import { getSocket } from '@/socket';
-import { BOARD } from '@/constants/ludo';
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
 import { Pressable } from '@/components/ui/pressable';
-import Cone from '@/assets/icons/Cone';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
-import { Grid, GridItem } from '@/components/ui/grid';
-import LudoBoard from '@/assets/images/ludo.png';
-import { Image } from 'react-native';
+import { Animated, Image } from 'react-native';
 import AnimatedCircularProgress, { interpolateColor } from './progress';
 import { useSharedValue } from 'react-native-reanimated';
+import LudoBoard from '@/assets/images/ludo-board.png';
+import { gridSize, initialPins } from '../_constants/ludo';
+
 const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
+  const isAnimating = useRef(false);
+
+  const pinsRef = useRef(
+    initialPins.map((pin) => ({
+      ...pin,
+      animX: new Animated.Value(pin.x),
+      animY: new Animated.Value(pin.y),
+      animScale: new Animated.Value(1),
+    }))
+  ).current;
+
   const socket = getSocket();
   const { game } = useLocalSearchParams<{ game: string }>();
 
@@ -37,37 +47,12 @@ const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
       socket?.off('gameUpdate');
     };
   }, []);
-  const movePin = (pinHome: string) => {
-    if (!socket) return;
-    console.log('moving', pinHome);
-    socket.emit('ludo:movePin', { userId: user!.id, gameId: playingGame.id, pinHome });
-  };
-  const getColor = (color: 'red' | 'green' | 'blue' | 'yellow' | 'white', shade: 200 | 500): string => {
-    const colors: Record<'red' | 'green' | 'blue' | 'yellow' | 'white', { 200: string; 500: string }> = {
-      red: {
-        200: '#EA4335', // Light red
-        500: '#f56565', // Base red
-      },
-      green: {
-        200: '#34A853', // Light green
-        500: '#48bb78', // Base green
-      },
-      blue: {
-        200: '#4285F4', // Light blue
-        500: '#4299e1', // Base blue
-      },
-      yellow: {
-        200: '#FFC107', // Light yellow
-        500: '#ecc94b', // Base yellow
-      },
-      white: {
-        200: '#0c2665', // Light yellow
-        500: '#ecc94b', // Base yellow
-      },
-    };
 
-    return colors[color]?.[shade] || '#e2e8f0'; // Default to gray-300
-  };
+  // const movePin = (pinHome: string) => {
+  //   if (!socket) return;
+  //   console.log('moving', pinHome);
+  //   socket.emit('ludo:movePin', { userId: user!.id, gameId: playingGame.id, pinHome });
+  // };
 
   return (
     <VStack className=" w-full" space="md">
@@ -83,56 +68,27 @@ const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
         {/* {playingGame.maxPlayers === 4 && <Player color={'#0F52BA'} inverse={true} gameId={playingGame.id} roll={playingGame.options.roll} />} */}
       </HStack>
       <Box className=" rounded-xl overflow-hidden relative" style={{ aspectRatio: 1 }}>
-        {BOARD.map((row, rowIndex) => (
-          <Box key={rowIndex} className="flex flex-row flex-1">
-            {row.map((square, idx) => (
-              <Box
-                key={idx}
-                style={{
-                  flex: 1,
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  backgroundColor: square.color ? getColor(square.color, 200) : '#E5E7EB',
-                  outlineWidth: 1,
-                  outlineColor: !square.color ? '#d1d5db' : 'transparent',
-                }}
-              >
-                {square.safe && <Feather name="star" size={12} color="#ECC94B" style={{ position: 'absolute' }} />}
+        <Image source={LudoBoard} style={{ width: '100%', height: '100%' }} resizeMode="contain" />
+        {pinsRef.map((p, i) => (
+          <Animated.View
+            key={i}
+            style={{
+              position: 'absolute',
+              width: '6%',
+              height: '6%',
+              borderRadius: 999,
+              backgroundColor: p.color,
+              borderWidth: 2,
+              borderColor: 'white',
+              left: p.animX.interpolate({ inputRange: [0, gridSize], outputRange: ['0%', '100%'] }),
+              top: p.animY.interpolate({ inputRange: [0, gridSize], outputRange: ['0%', '100%'] }),
 
-                {(() => {
-                  const pinsAtSquare = playingGame.options.pins.filter((p: any) => p.position === square.id);
-                  const isSingle = pinsAtSquare.length === 1;
-
-                  return (
-                    <Box
-                      style={{
-                        width: '100%', // fixed size box for wrapping
-                        height: '100%',
-                        display: 'flex',
-                        flexDirection: 'row',
-                        flexWrap: isSingle ? 'nowrap' : 'wrap',
-                        justifyContent: isSingle ? 'center' : 'flex-start',
-                        alignItems: isSingle ? 'center' : 'flex-start',
-                      }}
-                    >
-                      {pinsAtSquare.map((p: any, i: number) => (
-                        <Pressable key={i} onPress={() => movePin(p.home)} className=" z-50">
-                          <Cone width={isSingle ? 30 : 10} height={isSingle ? 30 : 10} color={p.color} />
-                        </Pressable>
-                      ))}
-                    </Box>
-                  );
-                })()}
-              </Box>
-            ))}
-          </Box>
+              transform: [{ translateX: 2 }, { translateY: 2 }, { scale: p.animScale }],
+            }}
+          >
+            <Pressable className="flex-1" />
+          </Animated.View>
         ))}
-        <VStack className="absolute top-0 bottom-0 left-0 right-0 z-10 ">
-          <Image
-            source={LudoBoard} // or base64
-            style={{ width: '100%', height: '100%', backgroundColor: 'green' }}
-          />
-        </VStack>
       </Box>
       <HStack className="flex flex-row justify-between">
         {playingGame.maxPlayers === 4 ? (
