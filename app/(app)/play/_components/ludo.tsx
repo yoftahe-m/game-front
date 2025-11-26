@@ -1,9 +1,7 @@
 import { useSelector } from 'react-redux';
 import { useEffect, useRef, useState } from 'react';
-import Svg, { Polygon } from 'react-native-svg';
 import { useLocalSearchParams } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Feather, FontAwesome, FontAwesome5 } from '@expo/vector-icons';
+import { FontAwesome, FontAwesome5 } from '@expo/vector-icons';
 
 import { RootState } from '@/store';
 import { getSocket } from '@/socket';
@@ -17,22 +15,23 @@ import { Animated, Image } from 'react-native';
 import AnimatedCircularProgress, { interpolateColor } from './progress';
 import { useSharedValue } from 'react-native-reanimated';
 import LudoBoard from '@/assets/images/ludo-board.png';
-import { gridSize, initialPins } from '../_constants/ludo';
+import { gridSize, homePaths, initialPins, mainPath, safeArea, startPositions, turningPoints } from '../_constants/ludo';
+import { Color, Coordinate } from '../type/ludo';
+import { isSamePos } from '../utils/ludo';
 
 const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
   const isAnimating = useRef(false);
+  const socket = getSocket();
+  const { game } = useLocalSearchParams<{ game: string }>();
 
   const pinsRef = useRef(
-    initialPins.map((pin) => ({
+    JSON.parse(game).options.pins.map((pin: any) => ({
       ...pin,
       animX: new Animated.Value(pin.x),
       animY: new Animated.Value(pin.y),
       animScale: new Animated.Value(1),
     }))
   ).current;
-
-  const socket = getSocket();
-  const { game } = useLocalSearchParams<{ game: string }>();
 
   const user = useSelector((state: RootState) => state.user.data);
   const [playingGame, setPlayingGame] = useState(JSON.parse(game));
@@ -48,11 +47,176 @@ const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
     };
   }, []);
 
-  // const movePin = (pinHome: string) => {
-  //   if (!socket) return;
-  //   console.log('moving', pinHome);
-  //   socket.emit('ludo:movePin', { userId: user!.id, gameId: playingGame.id, pinHome });
-  // };
+  const handlePinPress = (index: number) => {
+    if (!socket) return;
+    if (playingGame.options.turn !== user!.id) return;
+    let playerIndex = playingGame.players.findIndex((p: any) => p.userId === playingGame.options.turn);
+
+    let playerColor: Color;
+    if (playingGame.players.length === 4) {
+      playerColor = ['red', 'blue', 'green', 'yellow'][playerIndex] as Color;
+    } else {
+      playerColor = ['red', 'yellow'][playerIndex] as Color;
+    }
+
+    if (isAnimating.current) return;
+
+    const pin = pinsRef[index];
+    const roll = playingGame.options.roll;
+    if (pin.color !== playerColor) return;
+    // socket.emit('ludo:movePin', { gameId: playingGame.id, index });
+
+    if (pin.state === 'base') {
+      const startPos = startPositions[pin.color as Color];
+      pin.x = startPos.x;
+      pin.y = startPos.y;
+      pin.state = 'board';
+
+      Animated.parallel([
+        Animated.timing(pin.animX, { toValue: startPos.x, duration: 400, useNativeDriver: false }),
+        Animated.timing(pin.animY, { toValue: startPos.y, duration: 400, useNativeDriver: false }),
+      ]).start();
+
+      return;
+    }
+
+    /* ---------------------------
+         PRE-SIMULATE PATH
+      --------------------------- */
+    let simulatedState = pin.state;
+    let simulatedX = pin.x;
+    let simulatedY = pin.y;
+    const plannedSteps: Coordinate[] = [];
+
+    for (let i = 1; i <= roll; i++) {
+      let nextPos: Coordinate | null = null;
+
+      if (simulatedState === 'board') {
+        const idx = mainPath.findIndex((p) => isSamePos(p, { x: simulatedX, y: simulatedY }));
+        const turnIndex = turningPoints[pin.color as Color];
+
+        if (idx === turnIndex) {
+          simulatedState = 'home';
+          nextPos = homePaths[pin.color as Color][0];
+        } else {
+          nextPos = mainPath[(idx + 1) % mainPath.length];
+        }
+      } else if (simulatedState === 'home') {
+        const idx = homePaths[pin.color as Color].findIndex((p) => isSamePos(p, { x: simulatedX, y: simulatedY }));
+        if (idx + 1 < homePaths[pin.color as Color].length) {
+          nextPos = homePaths[pin.color as Color][idx + 1];
+        } else {
+          break;
+        }
+      }
+
+      if (nextPos) {
+        plannedSteps.push(nextPos);
+        simulatedX = nextPos.x;
+        simulatedY = nextPos.y;
+      }
+    }
+
+    if (plannedSteps.length === 0) return;
+
+    /* ---------------------------
+         ANIMATION SEQUENCE
+      --------------------------- */
+    isAnimating.current = true;
+    const animSequence: any = [];
+
+    plannedSteps.forEach((pos) => {
+      animSequence.push(
+        Animated.parallel([
+          Animated.timing(pin.animX, { toValue: pos.x, duration: 200, useNativeDriver: false }),
+          Animated.timing(pin.animY, { toValue: pos.y, duration: 200, useNativeDriver: false }),
+          Animated.sequence([
+            Animated.timing(pin.animScale, { toValue: 1.25, duration: 100, useNativeDriver: false }),
+            Animated.timing(pin.animScale, { toValue: 1, duration: 100, useNativeDriver: false }),
+          ]),
+        ])
+      );
+    });
+
+    Animated.sequence(animSequence).start(() => {
+      const finalPos = plannedSteps[plannedSteps.length - 1];
+      pin.x = finalPos.x;
+      pin.y = finalPos.y;
+
+      const isInHome = homePaths[pin.color as Color].some((p) => isSamePos(p, finalPos));
+      if (isInHome) pin.state = 'home';
+
+      const isInSafeArea = safeArea.find((a) => a.x === pin.x && a.y === pin.y);
+      if (!isInSafeArea) checkCollision(pin);
+      isAnimating.current = false;
+    });
+  };
+
+  /* ---------------------------
+       COLLISION HANDLING
+    --------------------------- */
+  const checkCollision = (movingPin: any) => {
+    if (movingPin.state === 'home') return;
+
+    pinsRef.forEach((otherPin: any) => {
+      const sameTile =
+        otherPin.id !== movingPin.id &&
+        otherPin.color !== movingPin.color &&
+        otherPin.state === 'board' &&
+        otherPin.x === movingPin.x &&
+        otherPin.y === movingPin.y;
+
+      if (!sameTile) return;
+      let index = 0;
+
+      if (otherPin.color === 'red') index = 0;
+      else if (otherPin.color === 'blue') index = 13;
+      else if (otherPin.color === 'yellow') index = 26;
+      else if (otherPin.color === 'green') index = 39;
+      // Find index of otherPin along the main path
+      const path = [...mainPath.slice(index), ...mainPath.slice(0, index)];
+
+      const hitIndex = path.findIndex((p) => isSamePos(p, { x: otherPin.x, y: otherPin.y }));
+
+      if (hitIndex === -1) return;
+
+      // Build reverse path -> from current tile back to start of mainPath
+      const reversePath: Coordinate[] = [];
+
+      for (let i = hitIndex; i >= 0; i--) {
+        reversePath.push(path[i]);
+      }
+
+      // Then push base position
+      reversePath.push({ x: otherPin.base.x, y: otherPin.base.y });
+
+      otherPin.state = 'base';
+
+      // Animation sequence
+      isAnimating.current = true;
+      const anims = reversePath.map((step) =>
+        Animated.parallel([
+          Animated.timing(otherPin.animX, {
+            toValue: step.x,
+            duration: 50,
+            useNativeDriver: false,
+          }),
+          Animated.timing(otherPin.animY, {
+            toValue: step.y,
+            duration: 50,
+            useNativeDriver: false,
+          }),
+        ])
+      );
+
+      Animated.sequence(anims).start(() => {
+        otherPin.x = otherPin.base.x;
+        otherPin.y = otherPin.base.y;
+
+        isAnimating.current = false;
+      });
+    });
+  };
 
   return (
     <VStack className=" w-full" space="md">
@@ -69,7 +233,7 @@ const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
       </HStack>
       <Box className=" rounded-xl overflow-hidden relative" style={{ aspectRatio: 1 }}>
         <Image source={LudoBoard} style={{ width: '100%', height: '100%' }} resizeMode="contain" />
-        {pinsRef.map((p, i) => (
+        {pinsRef.map((p: any, i: number) => (
           <Animated.View
             key={i}
             style={{
@@ -86,7 +250,7 @@ const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
               transform: [{ translateX: 2 }, { translateY: 2 }, { scale: p.animScale }],
             }}
           >
-            <Pressable className="flex-1" />
+            <Pressable className="flex-1" onPress={() => handlePinPress(i)} />
           </Animated.View>
         ))}
       </Box>
@@ -207,70 +371,5 @@ function Player({
         {player.username}
       </Text>
     </VStack>
-  );
-}
-
-type ColorType = 'red' | 'blue' | 'green' | 'yellow';
-
-const colorMap: Record<ColorType, { gradient: readonly [string, string]; border: string }> = {
-  red: { gradient: ['#ff2a2a', '#d80000'], border: '#d80000' },
-  blue: { gradient: ['#3b82f6', '#1d4ed8'], border: '#1d4ed8' },
-  green: { gradient: ['#22c55e', '#15803d'], border: '#15803d' },
-  yellow: { gradient: ['#facc15', '#ca8a04'], border: '#ca8a04' },
-};
-
-export const ColorPanel = ({ color }: { color: ColorType }) => {
-  const gradient = colorMap[color].gradient;
-  const borderColor = colorMap[color].border;
-
-  return (
-    <LinearGradient
-      colors={gradient}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={{
-        width: '40%',
-        height: '100%',
-        borderRadius: 10,
-        borderWidth: 2,
-        justifyContent: 'center',
-        alignItems: 'center',
-        shadowColor: '#000',
-        shadowOpacity: 0.4,
-        shadowRadius: 15,
-        shadowOffset: { width: 0, height: 5 },
-        borderColor,
-      }}
-    >
-      <Box style={{ width: '75%', aspectRatio: 1, backgroundColor: 'rgba(255,255,255,0.2)', borderRadius: 8 }} />
-    </LinearGradient>
-  );
-};
-
-function CenterPanel() {
-  return (
-    <Box
-      style={{
-        width: '20%',
-        height: '100%',
-        borderRadius: 10,
-        shadowColor: '#000',
-        shadowOpacity: 0.3,
-        shadowRadius: 12,
-        shadowOffset: { width: 0, height: 6 },
-        overflow: 'hidden',
-      }}
-    >
-      <Svg width="100%" height="100%" viewBox="0 0 100 100">
-        {/* Top Triangle (Blue) */}
-        <Polygon points="0,0 100,0 50,50" fill="#4285F4" />
-        {/* Right Triangle (Yellow) */}
-        <Polygon points="100,0 100,100 50,50" fill="#FFC107" />
-        {/* Bottom Triangle (Green) */}
-        <Polygon points="0,100 100,100 50,50" fill="#34A853" />
-        {/* Left Triangle (Red) */}
-        <Polygon points="0,0 0,100 50,50" fill="#EA4335" />
-      </Svg>
-    </Box>
   );
 }
