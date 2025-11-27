@@ -23,6 +23,7 @@ const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
   const isAnimating = useRef(false);
   const socket = getSocket();
   const { game } = useLocalSearchParams<{ game: string }>();
+const user = useSelector((state: RootState) => state.user.data);
 
   const pinsRef = useRef(
     JSON.parse(game).options.pins.map((pin: any) => ({
@@ -39,6 +40,86 @@ const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
   useEffect(() => {
     if (!socket) return;
     socket.on('gameUpdate', (gameUpdate) => {
+      try {
+        const lastMove = gameUpdate.options?.lastMove;
+
+        if (lastMove && typeof lastMove.index === 'number') {
+          // Animate the moved pin step-by-step
+          const movedPinData = gameUpdate.options.pins[lastMove.index];
+          const movedPinLocal = pinsRef.find((p: any) => p.id === movedPinData?.id);
+
+          if (movedPinLocal && Array.isArray(lastMove.steps) && lastMove.steps.length > 0) {
+            // If already at final pos, skip
+            const finalStep = lastMove.steps[lastMove.steps.length - 1];
+            const alreadyAtFinal = movedPinLocal.x === finalStep.x && movedPinLocal.y === finalStep.y;
+
+            if (!alreadyAtFinal) {
+              const seq = lastMove.steps.map((step: any) =>
+                Animated.parallel([
+                  Animated.timing(movedPinLocal.animX, { toValue: step.x, duration: 180, useNativeDriver: false }),
+                  Animated.timing(movedPinLocal.animY, { toValue: step.y, duration: 180, useNativeDriver: false }),
+                  Animated.sequence([
+                    Animated.timing(movedPinLocal.animScale, { toValue: 1.2, duration: 90, useNativeDriver: false }),
+                    Animated.timing(movedPinLocal.animScale, { toValue: 1, duration: 90, useNativeDriver: false }),
+                  ]),
+                ])
+              );
+
+              Animated.sequence(seq).start(() => {
+                movedPinLocal.x = finalStep.x;
+                movedPinLocal.y = finalStep.y;
+                // update state from server authoritative data
+                movedPinLocal.state = movedPinData.state;
+              });
+            }
+          }
+
+          // Animate killed pins (if any)
+          if (Array.isArray(lastMove.killed) && lastMove.killed.length > 0) {
+            lastMove.killed.forEach((k: any) => {
+              const otherLocal = pinsRef.find((p: any) => p.id === k.id);
+              if (!otherLocal) return;
+
+              // quick animation to the base position (k.to)
+              Animated.sequence([
+                Animated.parallel([
+                  Animated.timing(otherLocal.animX, { toValue: k.to.x, duration: 200, useNativeDriver: false }),
+                  Animated.timing(otherLocal.animY, { toValue: k.to.y, duration: 200, useNativeDriver: false }),
+                ]),
+              ]).start(() => {
+                otherLocal.state = 'base';
+                otherLocal.x = k.to.x;
+                otherLocal.y = k.to.y;
+              });
+            });
+          }
+        } else {
+          // fallback: animate any pin that changed position/state to server final
+          gameUpdate.options.pins.forEach((updatedPin: any) => {
+            const localPin = pinsRef.find((p: any) => p.id === updatedPin.id);
+            if (!localPin) return;
+
+            const changed = localPin.x !== updatedPin.x || localPin.y !== updatedPin.y || localPin.state !== updatedPin.state;
+            if (!changed) return;
+
+            Animated.parallel([
+              Animated.timing(localPin.animX, { toValue: updatedPin.x, duration: 300, useNativeDriver: false }),
+              Animated.timing(localPin.animY, { toValue: updatedPin.y, duration: 300, useNativeDriver: false }),
+              Animated.sequence([
+                Animated.timing(localPin.animScale, { toValue: 1.15, duration: 120, useNativeDriver: false }),
+                Animated.timing(localPin.animScale, { toValue: 1, duration: 120, useNativeDriver: false }),
+              ]),
+            ]).start(() => {
+              localPin.x = updatedPin.x;
+              localPin.y = updatedPin.y;
+              localPin.state = updatedPin.state;
+            });
+          });
+        }
+      } catch (e) {
+        // ignore animation errors
+      }
+
       setPlayingGame(gameUpdate);
     });
 
@@ -64,7 +145,6 @@ const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
     const pin = pinsRef[index];
     const roll = playingGame.options.roll;
     if (pin.color !== playerColor) return;
-    // socket.emit('ludo:movePin', { gameId: playingGame.id, index });
 
     if (pin.state === 'base') {
       const startPos = startPositions[pin.color as Color];
@@ -76,6 +156,8 @@ const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
         Animated.timing(pin.animX, { toValue: startPos.x, duration: 400, useNativeDriver: false }),
         Animated.timing(pin.animY, { toValue: startPos.y, duration: 400, useNativeDriver: false }),
       ]).start();
+
+      socket.emit('ludo:movePin', { gameId: playingGame.id, index });
 
       return;
     }
@@ -149,6 +231,8 @@ const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
       const isInSafeArea = safeArea.find((a) => a.x === pin.x && a.y === pin.y);
       if (!isInSafeArea) checkCollision(pin);
       isAnimating.current = false;
+
+      if (socket) socket.emit('ludo:movePin', { gameId: playingGame.id, index });
     });
   };
 
@@ -248,6 +332,7 @@ const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
               top: p.animY.interpolate({ inputRange: [0, gridSize], outputRange: ['0%', '100%'] }),
 
               transform: [{ translateX: 2 }, { translateY: 2 }, { scale: p.animScale }],
+              zIndex: user?.id === playingGame.options.turn ? 10 : 1,
             }}
           >
             <Pressable className="flex-1" onPress={() => handlePinPress(i)} />
