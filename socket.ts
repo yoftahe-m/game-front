@@ -6,7 +6,7 @@ let socket: Socket | null = null;
 export const connectSocket = (token: string): Socket => {
   if (socket) return socket; // reuse existing
 
-  socket = io('http://192.168.252.60:8100', {
+  socket = io('http://192.168.103.60:8100', {
     transports: ['websocket'],
     auth: { token },
   });

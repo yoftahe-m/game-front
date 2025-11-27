@@ -23,7 +23,6 @@ const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
   const isAnimating = useRef(false);
   const socket = getSocket();
   const { game } = useLocalSearchParams<{ game: string }>();
-const user = useSelector((state: RootState) => state.user.data);
 
   const pinsRef = useRef(
     JSON.parse(game).options.pins.map((pin: any) => ({
@@ -80,17 +79,33 @@ const user = useSelector((state: RootState) => state.user.data);
               const otherLocal = pinsRef.find((p: any) => p.id === k.id);
               if (!otherLocal) return;
 
-              // quick animation to the base position (k.to)
-              Animated.sequence([
-                Animated.parallel([
-                  Animated.timing(otherLocal.animX, { toValue: k.to.x, duration: 200, useNativeDriver: false }),
-                  Animated.timing(otherLocal.animY, { toValue: k.to.y, duration: 200, useNativeDriver: false }),
-                ]),
-              ]).start(() => {
-                otherLocal.state = 'base';
-                otherLocal.x = k.to.x;
-                otherLocal.y = k.to.y;
-              });
+              // If server supplies steps, animate tile-by-tile. Otherwise fallback to final coord.
+              if (Array.isArray(k.steps) && k.steps.length > 0) {
+                const tileAnims = k.steps.map((step: any) =>
+                  // animate X then Y per tile to avoid diagonal shortcut
+                  Animated.sequence([
+                    Animated.timing(otherLocal.animX, { toValue: step.x, duration: 60, useNativeDriver: false }),
+                    Animated.timing(otherLocal.animY, { toValue: step.y, duration: 60, useNativeDriver: false }),
+                  ])
+                );
+
+                Animated.sequence(tileAnims).start(() => {
+                  const last = k.steps[k.steps.length - 1];
+                  otherLocal.state = 'base';
+                  otherLocal.x = last.x;
+                  otherLocal.y = last.y;
+                });
+              } else {
+                // fallback: animate straight to the base (older behavior)
+                Animated.sequence([
+                  Animated.timing(otherLocal.animX, { toValue: k.to?.x ?? otherLocal.base.x, duration: 200, useNativeDriver: false }),
+                  Animated.timing(otherLocal.animY, { toValue: k.to?.y ?? otherLocal.base.y, duration: 200, useNativeDriver: false }),
+                ]).start(() => {
+                  otherLocal.state = 'base';
+                  otherLocal.x = k.to?.x ?? otherLocal.base.x;
+                  otherLocal.y = k.to?.y ?? otherLocal.base.y;
+                });
+              }
             });
           }
         } else {
@@ -278,16 +293,18 @@ const user = useSelector((state: RootState) => state.user.data);
 
       // Animation sequence
       isAnimating.current = true;
+      // Animate each tile as two sub-steps (X then Y) to avoid diagonal shortcuts.
+      // This forces the pin to move along the grid path (L-shaped per tile) instead of directly interpolating.
       const anims = reversePath.map((step) =>
-        Animated.parallel([
+        Animated.sequence([
           Animated.timing(otherPin.animX, {
             toValue: step.x,
-            duration: 50,
+            duration: 60,
             useNativeDriver: false,
           }),
           Animated.timing(otherPin.animY, {
             toValue: step.y,
-            duration: 50,
+            duration: 60,
             useNativeDriver: false,
           }),
         ])
@@ -301,6 +318,17 @@ const user = useSelector((state: RootState) => state.user.data);
       });
     });
   };
+
+  const isUserTurn = user?.id === playingGame.options.turn;
+  // derive current user's color (only used when it's their turn)
+  let userColor: Color | null = null;
+  if (isUserTurn) {
+    const playerIndex = playingGame.players.findIndex((p: any) => p.userId === user?.id);
+    userColor =
+      playingGame.players.length === 4
+        ? (['red', 'blue', 'green', 'yellow'][playerIndex] as Color)
+        : (['red', 'yellow'][playerIndex] as Color);
+  }
 
   return (
     <VStack className=" w-full" space="md">
@@ -317,27 +345,36 @@ const user = useSelector((state: RootState) => state.user.data);
       </HStack>
       <Box className=" rounded-xl overflow-hidden relative" style={{ aspectRatio: 1 }}>
         <Image source={LudoBoard} style={{ width: '100%', height: '100%' }} resizeMode="contain" />
-        {pinsRef.map((p: any, i: number) => (
-          <Animated.View
-            key={i}
-            style={{
-              position: 'absolute',
-              width: '6%',
-              height: '6%',
-              borderRadius: 999,
-              backgroundColor: p.color,
-              borderWidth: 2,
-              borderColor: 'white',
-              left: p.animX.interpolate({ inputRange: [0, gridSize], outputRange: ['0%', '100%'] }),
-              top: p.animY.interpolate({ inputRange: [0, gridSize], outputRange: ['0%', '100%'] }),
+        {pinsRef.map((p: any, i: number) => {
+          const isInSafe = safeArea.some((s) => s.x === p.x && s.y === p.y);
+          const isOwnedByUser = userColor !== null && p.color === userColor;
+          // Ensure current user's pins are always on top (even when not their turn).
+          // Use elevation for Android and zIndex for iOS.
+          const pinZ = isOwnedByUser ? 100 : 1;
 
-              transform: [{ translateX: 2 }, { translateY: 2 }, { scale: p.animScale }],
-              zIndex: user?.id === playingGame.options.turn ? 10 : 1,
-            }}
-          >
-            <Pressable className="flex-1" onPress={() => handlePinPress(i)} />
-          </Animated.View>
-        ))}
+          return (
+            <Animated.View
+              key={i}
+              style={{
+                position: 'absolute',
+                width: '6%',
+                height: '6%',
+                borderRadius: 999,
+                backgroundColor: p.color,
+                borderWidth: 2,
+                borderColor: 'white',
+                left: p.animX.interpolate({ inputRange: [0, gridSize], outputRange: ['0%', '100%'] }),
+                top: p.animY.interpolate({ inputRange: [0, gridSize], outputRange: ['0%', '100%'] }),
+
+                transform: [{ translateX: 2 }, { translateY: 2 }, { scale: p.animScale }],
+                zIndex: pinZ,
+                elevation: pinZ,
+              }}
+            >
+              <Pressable className="flex-1" onPress={() => handlePinPress(i)} />
+            </Animated.View>
+          );
+        })}
       </Box>
       <HStack className="flex flex-row justify-between">
         {playingGame.maxPlayers === 4 ? (
