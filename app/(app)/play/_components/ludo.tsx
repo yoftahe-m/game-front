@@ -161,25 +161,21 @@ const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
     const roll = playingGame.options.roll;
     if (pin.color !== playerColor) return;
 
+    const isRolledByUser = playingGame.options.rolledBy === user!.id;
+
+    console.log('Pressed pin:', index, 'Color:', pin.color, 'Roll:', roll, 'State:', pin.state);
+    // Prevent leaving base unless the die roll is a 6
     if (pin.state === 'base') {
-      const startPos = startPositions[pin.color as Color];
-      pin.x = startPos.x;
-      pin.y = startPos.y;
-      pin.state = 'board';
-
-      Animated.parallel([
-        Animated.timing(pin.animX, { toValue: startPos.x, duration: 400, useNativeDriver: false }),
-        Animated.timing(pin.animY, { toValue: startPos.y, duration: 400, useNativeDriver: false }),
-      ]).start();
-
-      socket.emit('ludo:movePin', { gameId: playingGame.id, index });
-
-      return;
+      // only requirement to leave base is that the current roll equals 6
+      // (server still enforces that the player actually rolled; this avoids frontend blocking
+      // when local `rolledBy` hasn't been updated yet)
+      if (roll !== 6) return;
     }
 
+    console.log('Animating pin move...');
     /* ---------------------------
-         PRE-SIMULATE PATH
-      --------------------------- */
+         PRE-SIMULATE PATH (same for preview & actual move)
+       --------------------------- */
     let simulatedState = pin.state;
     let simulatedX = pin.x;
     let simulatedY = pin.y;
@@ -188,7 +184,17 @@ const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
     for (let i = 1; i <= roll; i++) {
       let nextPos: Coordinate | null = null;
 
-      if (simulatedState === 'board') {
+      // Handle leaving base: first step goes to the start position if roll allows (roll checked earlier)
+      if (simulatedState === 'base') {
+        const startPos = startPositions[pin.color as Color];
+        nextPos = startPos;
+        simulatedState = 'board';
+
+        if (nextPos) {
+          plannedSteps.push(nextPos);
+        }
+        break;
+      } else if (simulatedState === 'board') {
         const idx = mainPath.findIndex((p) => isSamePos(p, { x: simulatedX, y: simulatedY }));
         const turnIndex = turningPoints[pin.color as Color];
 
@@ -213,29 +219,58 @@ const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
         simulatedY = nextPos.y;
       }
     }
+    console.log('Planned steps:', plannedSteps);
 
     if (plannedSteps.length === 0) return;
 
     /* ---------------------------
-         ANIMATION SEQUENCE
-      --------------------------- */
+         PREVIEW (before rolling) OR ACTUAL MOVE (after rolling)
+       --------------------------- */
     isAnimating.current = true;
-    const animSequence: any = [];
+    const forwardAnims = plannedSteps.map((pos) =>
+      Animated.parallel([
+        Animated.timing(pin.animX, { toValue: pos.x, duration: 200, useNativeDriver: false }),
+        Animated.timing(pin.animY, { toValue: pos.y, duration: 200, useNativeDriver: false }),
+        Animated.sequence([
+          Animated.timing(pin.animScale, { toValue: 1.25, duration: 100, useNativeDriver: false }),
+          Animated.timing(pin.animScale, { toValue: 1, duration: 100, useNativeDriver: false }),
+        ]),
+      ])
+    );
 
-    plannedSteps.forEach((pos) => {
-      animSequence.push(
+    if (!isRolledByUser) {
+      // PREVIEW: animate forward then revert back to original position (don't change authoritative pin.x/y/state or emit)
+      const origX = pin.x;
+      const origY = pin.y;
+      Animated.sequence([
+        Animated.sequence(forwardAnims),
+        // short pause
+        Animated.delay(120),
+        // revert animations back to original coords (tile by tile reversed to avoid diagonal)
+        ...plannedSteps
+          .slice()
+          .reverse()
+          .map((pos) =>
+            Animated.sequence([
+              Animated.timing(pin.animX, { toValue: pos.x, duration: 120, useNativeDriver: false }),
+              Animated.timing(pin.animY, { toValue: pos.y, duration: 120, useNativeDriver: false }),
+            ])
+          ),
         Animated.parallel([
-          Animated.timing(pin.animX, { toValue: pos.x, duration: 200, useNativeDriver: false }),
-          Animated.timing(pin.animY, { toValue: pos.y, duration: 200, useNativeDriver: false }),
-          Animated.sequence([
-            Animated.timing(pin.animScale, { toValue: 1.25, duration: 100, useNativeDriver: false }),
-            Animated.timing(pin.animScale, { toValue: 1, duration: 100, useNativeDriver: false }),
-          ]),
-        ])
-      );
-    });
+          Animated.timing(pin.animX, { toValue: origX, duration: 200, useNativeDriver: false }),
+          Animated.timing(pin.animY, { toValue: origY, duration: 200, useNativeDriver: false }),
+        ]),
+      ]).start(() => {
+        // nothing changed server-side, restore scale and flags
+        Animated.timing(pin.animScale, { toValue: 1, duration: 80, useNativeDriver: false }).start();
+        isAnimating.current = false;
+      });
 
-    Animated.sequence(animSequence).start(() => {
+      return;
+    }
+
+    // ACTUAL MOVE: user has rolled — perform animation, update local refs and notify server
+    Animated.sequence(forwardAnims).start(() => {
       const finalPos = plannedSteps[plannedSteps.length - 1];
       pin.x = finalPos.x;
       pin.y = finalPos.y;
@@ -325,9 +360,7 @@ const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
   if (isUserTurn) {
     const playerIndex = playingGame.players.findIndex((p: any) => p.userId === user?.id);
     userColor =
-      playingGame.players.length === 4
-        ? (['red', 'blue', 'green', 'yellow'][playerIndex] as Color)
-        : (['red', 'yellow'][playerIndex] as Color);
+      playingGame.players.length === 4 ? (['red', 'blue', 'green', 'yellow'][playerIndex] as Color) : (['red', 'yellow'][playerIndex] as Color);
   }
 
   return (
