@@ -42,71 +42,78 @@ const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
       try {
         const lastMove = gameUpdate.options?.lastMove;
 
+        const animateKilledPins = (killed: any[] | undefined) => {
+          if (!Array.isArray(killed) || killed.length === 0) return;
+          killed.forEach((k: any) => {
+            const otherLocal = pinsRef.find((p: any) => p.id === k.id);
+            if (!otherLocal) return;
+
+            if (Array.isArray(k.steps) && k.steps.length > 0) {
+              const tileAnims = k.steps.map((step: any) =>
+                Animated.sequence([
+                  Animated.timing(otherLocal.animX, { toValue: step.x, duration: 60, useNativeDriver: false }),
+                  Animated.timing(otherLocal.animY, { toValue: step.y, duration: 60, useNativeDriver: false }),
+                ])
+              );
+
+              Animated.sequence(tileAnims).start(() => {
+                const last = k.steps[k.steps.length - 1];
+                otherLocal.state = 'base';
+                otherLocal.x = last.x;
+                otherLocal.y = last.y;
+              });
+            } else {
+              Animated.sequence([
+                Animated.timing(otherLocal.animX, { toValue: k.to?.x ?? otherLocal.base.x, duration: 200, useNativeDriver: false }),
+                Animated.timing(otherLocal.animY, { toValue: k.to?.y ?? otherLocal.base.y, duration: 200, useNativeDriver: false }),
+              ]).start(() => {
+                otherLocal.state = 'base';
+                otherLocal.x = k.to?.x ?? otherLocal.base.x;
+                otherLocal.y = k.to?.y ?? otherLocal.base.y;
+              });
+            }
+          });
+        };
+
         if (lastMove && typeof lastMove.index === 'number') {
           // Animate the moved pin step-by-step
           const movedPinData = gameUpdate.options.pins[lastMove.index];
           const movedPinLocal = pinsRef.find((p: any) => p.id === movedPinData?.id);
 
           if (movedPinLocal && Array.isArray(lastMove.steps) && lastMove.steps.length > 0) {
-            // If already at final pos, skip
+            // If already at final pos, skip move animation but still run kill anims afterwards
             const finalStep = lastMove.steps[lastMove.steps.length - 1];
             const alreadyAtFinal = movedPinLocal.x === finalStep.x && movedPinLocal.y === finalStep.y;
 
-            if (!alreadyAtFinal) {
-              const seq = lastMove.steps.map((step: any) =>
-                Animated.parallel([
-                  Animated.timing(movedPinLocal.animX, { toValue: step.x, duration: 180, useNativeDriver: false }),
-                  Animated.timing(movedPinLocal.animY, { toValue: step.y, duration: 180, useNativeDriver: false }),
-                  Animated.sequence([
-                    Animated.timing(movedPinLocal.animScale, { toValue: 1.2, duration: 90, useNativeDriver: false }),
-                    Animated.timing(movedPinLocal.animScale, { toValue: 1, duration: 90, useNativeDriver: false }),
-                  ]),
-                ])
-              );
+            const moveSeq = lastMove.steps.map((step: any) =>
+              Animated.parallel([
+                Animated.timing(movedPinLocal.animX, { toValue: step.x, duration: 180, useNativeDriver: false }),
+                Animated.timing(movedPinLocal.animY, { toValue: step.y, duration: 180, useNativeDriver: false }),
+                Animated.sequence([
+                  Animated.timing(movedPinLocal.animScale, { toValue: 1.2, duration: 90, useNativeDriver: false }),
+                  Animated.timing(movedPinLocal.animScale, { toValue: 1, duration: 90, useNativeDriver: false }),
+                ]),
+              ])
+            );
 
-              Animated.sequence(seq).start(() => {
+            if (alreadyAtFinal) {
+              // no move animation, but still update authoritative state and then run killed animations
+              movedPinLocal.state = movedPinData.state;
+              movedPinLocal.x = finalStep.x;
+              movedPinLocal.y = finalStep.y;
+              animateKilledPins(lastMove.killed);
+            } else {
+              Animated.sequence(moveSeq).start(() => {
                 movedPinLocal.x = finalStep.x;
                 movedPinLocal.y = finalStep.y;
-                // update state from server authoritative data
                 movedPinLocal.state = movedPinData.state;
+                // Start kill animations only after the move finishes
+                animateKilledPins(lastMove.killed);
               });
             }
-          }
-
-          // Animate killed pins (if any)
-          if (Array.isArray(lastMove.killed) && lastMove.killed.length > 0) {
-            lastMove.killed.forEach((k: any) => {
-              const otherLocal = pinsRef.find((p: any) => p.id === k.id);
-              if (!otherLocal) return;
-
-              // If server supplies steps, animate tile-by-tile. Otherwise fallback to final coord.
-              if (Array.isArray(k.steps) && k.steps.length > 0) {
-                const tileAnims = k.steps.map((step: any) =>
-                  // animate X then Y per tile to avoid diagonal shortcut
-                  Animated.sequence([
-                    Animated.timing(otherLocal.animX, { toValue: step.x, duration: 60, useNativeDriver: false }),
-                    Animated.timing(otherLocal.animY, { toValue: step.y, duration: 60, useNativeDriver: false }),
-                  ])
-                );
-
-                Animated.sequence(tileAnims).start(() => {
-                  const last = k.steps[k.steps.length - 1];
-                  otherLocal.state = 'base';
-                  otherLocal.x = last.x;
-                  otherLocal.y = last.y;
-                });
-              } else {
-                // fallback: animate straight to the base (older behavior)
-                Animated.sequence([
-                  Animated.timing(otherLocal.animX, { toValue: k.to?.x ?? otherLocal.base.x, duration: 200, useNativeDriver: false }),
-                  Animated.timing(otherLocal.animY, { toValue: k.to?.y ?? otherLocal.base.y, duration: 200, useNativeDriver: false }),
-                ]).start(() => {
-                  otherLocal.state = 'base';
-                  otherLocal.x = k.to?.x ?? otherLocal.base.x;
-                  otherLocal.y = k.to?.y ?? otherLocal.base.y;
-                });
-              }
-            });
+          } else {
+            // no detailed steps for moved pin — still run killed pins after syncing state
+            animateKilledPins(lastMove.killed);
           }
         } else {
           // fallback: animate any pin that changed position/state to server final
