@@ -11,7 +11,7 @@ import { VStack } from '@/components/ui/vstack';
 import { HStack } from '@/components/ui/hstack';
 import { Pressable } from '@/components/ui/pressable';
 import { Avatar, AvatarFallbackText, AvatarImage } from '@/components/ui/avatar';
-import { Animated, Image } from 'react-native';
+import { Animated, Image, Easing } from 'react-native';
 import AnimatedCircularProgress, { interpolateColor } from './progress';
 import { useSharedValue } from 'react-native-reanimated';
 import LudoBoard from '@/assets/images/ludo-board.png';
@@ -36,6 +36,62 @@ const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
   const user = useSelector((state: RootState) => state.user.data);
   const [playingGame, setPlayingGame] = useState(JSON.parse(game));
 
+  // Helper: create a smooth, continuous animation along a sequence of grid coords
+  const animateAlongPath = (pin: any, path: Coordinate[], opts?: { stepsPerTile?: number; pointDuration?: number }, cb?: () => void) => {
+    if (!Array.isArray(path) || path.length === 0) {
+      cb?.();
+      return;
+    }
+
+    // Defaults tuned for faster kill animation:
+    // - fewer interpolation steps per tile
+    // - shorter duration per interpolated point
+    const stepsPerTile = opts?.stepsPerTile ?? 3; // fewer = less interpolation = faster
+    const pointDuration = opts?.pointDuration ?? 16; // ms per interpolated point (smaller = faster)
+
+    // Build dense list of intermediate points (linear interpolation per tile)
+    const points: Coordinate[] = [];
+    for (let s = 0; s < path.length - 1; s++) {
+      const a = path[s];
+      const b = path[s + 1];
+      for (let i = 1; i <= stepsPerTile; i++) {
+        const t = i / stepsPerTile;
+        points.push({
+          x: a.x + (b.x - a.x) * t,
+          y: a.y + (b.y - a.y) * t,
+        });
+      }
+    }
+
+    // If only single tile (no segment), ensure we include its final coord
+    if (points.length === 0) points.push(path[path.length - 1]);
+
+    // Create animated sequence over all points with no gaps so movement feels continuous
+    const anims = points.map((pt) =>
+      Animated.parallel([
+        Animated.timing(pin.animX, {
+          toValue: pt.x,
+          duration: pointDuration,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: false,
+        }),
+        Animated.timing(pin.animY, {
+          toValue: pt.y,
+          duration: pointDuration,
+          easing: Easing.out(Easing.cubic),
+          useNativeDriver: false,
+        }),
+      ])
+    );
+
+    Animated.sequence(anims).start(() => {
+      const last = path[path.length - 1];
+      pin.x = last.x;
+      pin.y = last.y;
+      cb?.();
+    });
+  };
+
   useEffect(() => {
     if (!socket) return;
     socket.on('gameUpdate', (gameUpdate) => {
@@ -44,33 +100,36 @@ const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
 
         const animateKilledPins = (killed: any[] | undefined) => {
           if (!Array.isArray(killed) || killed.length === 0) return;
+          // animate each killed pin sequentially (or in parallel if desired) but each uses smooth path interpolation
           killed.forEach((k: any) => {
             const otherLocal = pinsRef.find((p: any) => p.id === k.id);
             if (!otherLocal) return;
 
             if (Array.isArray(k.steps) && k.steps.length > 0) {
-              const tileAnims = k.steps.map((step: any) =>
-                Animated.sequence([
-                  Animated.timing(otherLocal.animX, { toValue: step.x, duration: 60, useNativeDriver: false }),
-                  Animated.timing(otherLocal.animY, { toValue: step.y, duration: 60, useNativeDriver: false }),
-                ])
+              // smooth interpolation across k.steps
+              animateAlongPath(
+                otherLocal,
+                k.steps,
+                { stepsPerTile: 3, pointDuration: 14 }, // faster: fewer points, shorter duration
+                () => {
+                  otherLocal.state = 'base';
+                  const last = k.steps[k.steps.length - 1];
+                  otherLocal.x = last.x;
+                  otherLocal.y = last.y;
+                }
               );
-
-              Animated.sequence(tileAnims).start(() => {
-                const last = k.steps[k.steps.length - 1];
-                otherLocal.state = 'base';
-                otherLocal.x = last.x;
-                otherLocal.y = last.y;
-              });
             } else {
-              Animated.sequence([
-                Animated.timing(otherLocal.animX, { toValue: k.to?.x ?? otherLocal.base.x, duration: 200, useNativeDriver: false }),
-                Animated.timing(otherLocal.animY, { toValue: k.to?.y ?? otherLocal.base.y, duration: 200, useNativeDriver: false }),
-              ]).start(() => {
-                otherLocal.state = 'base';
-                otherLocal.x = k.to?.x ?? otherLocal.base.x;
-                otherLocal.y = k.to?.y ?? otherLocal.base.y;
-              });
+              // fallback: quick smooth animate straight to base
+              animateAlongPath(
+                otherLocal,
+                [{ x: otherLocal.x, y: otherLocal.y }, { x: k.to?.x ?? otherLocal.base.x, y: k.to?.y ?? otherLocal.base.y }],
+                { stepsPerTile: 4, pointDuration: 12 },
+                () => {
+                  otherLocal.state = 'base';
+                  otherLocal.x = k.to?.x ?? otherLocal.base.x;
+                  otherLocal.y = k.to?.y ?? otherLocal.base.y;
+                }
+              );
             }
           });
         };
@@ -101,19 +160,20 @@ const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
               movedPinLocal.state = movedPinData.state;
               movedPinLocal.x = finalStep.x;
               movedPinLocal.y = finalStep.y;
-              animateKilledPins(lastMove.killed);
+              // run killed pins after a tiny delay to ensure final pin update visually settles
+              setTimeout(() => animateKilledPins(lastMove.killed), 60);
             } else {
               Animated.sequence(moveSeq).start(() => {
                 movedPinLocal.x = finalStep.x;
                 movedPinLocal.y = finalStep.y;
                 movedPinLocal.state = movedPinData.state;
-                // Start kill animations only after the move finishes
-                animateKilledPins(lastMove.killed);
+                // Start kill animations only after the move finishes (small delay for polish)
+                setTimeout(() => animateKilledPins(lastMove.killed), 40);
               });
             }
           } else {
             // no detailed steps for moved pin — still run killed pins after syncing state
-            animateKilledPins(lastMove.killed);
+            setTimeout(() => animateKilledPins(lastMove.killed), 40);
           }
         } else {
           // fallback: animate any pin that changed position/state to server final
@@ -352,15 +412,16 @@ const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
       // Animate each tile as two sub-steps (X then Y) to avoid diagonal shortcuts.
       // This forces the pin to move along the grid path (L-shaped per tile) instead of directly interpolating.
       const anims = reversePath.map((step) =>
+        // speed up local collision animation to match broadcasted kill animation tempo
         Animated.sequence([
           Animated.timing(otherPin.animX, {
             toValue: step.x,
-            duration: 60,
+            duration: 36,
             useNativeDriver: false,
           }),
           Animated.timing(otherPin.animY, {
             toValue: step.y,
-            duration: 60,
+            duration: 36,
             useNativeDriver: false,
           }),
         ])
