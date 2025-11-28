@@ -181,6 +181,20 @@ const Ludo = ({ resetCountdown }: { resetCountdown: () => void }) => {
     let simulatedY = pin.y;
     const plannedSteps: Coordinate[] = [];
 
+    // If pin is already on home path, ensure roll does not overshoot the end.
+    if (simulatedState === 'home') {
+      const homeArr = homePaths[pin.color as Color];
+      const currIdx = homeArr.findIndex((p) => isSamePos(p, { x: simulatedX, y: simulatedY }));
+      // if not found treat as cannot move
+      if (currIdx === -1) return;
+      const stepsRemaining = homeArr.length - 1 - currIdx;
+      if (stepsRemaining <= 0) return; // already at final
+      if (roll > stepsRemaining) {
+        // overshoot -> cannot move according to rule
+        return;
+      }
+    }
+
     for (let i = 1; i <= roll; i++) {
       let nextPos: Coordinate | null = null;
 
